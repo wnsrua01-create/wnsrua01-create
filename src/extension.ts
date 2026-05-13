@@ -8408,6 +8408,7 @@ export function activate(context: vscode.ExtensionContext) {
                             res.end(JSON.stringify({ error: 'name 필드가 유효하지 않습니다.' }));
                             return;
                         }
+                        let brainDir: string;
                         if (!_isBrainDirExplicitlySet()) {
                             const ensured = await _ensureBrainDir();
                             if (!ensured) {
@@ -8415,8 +8416,10 @@ export function activate(context: vscode.ExtensionContext) {
                                 res.end(JSON.stringify({ error: '두뇌 폴더를 먼저 선택해주세요.' }));
                                 return;
                             }
+                            brainDir = ensured;
+                        } else {
+                            brainDir = _getBrainDir();
                         }
-                        const brainDir = _getBrainDir();
                         const tplRoot = path.join(brainDir, '40_템플릿', agentId, safeName);
                         if (!tplRoot.startsWith(path.resolve(brainDir) + path.sep)) {
                             res.writeHead(400, { 'Content-Type': 'application/json' });
@@ -8459,7 +8462,7 @@ export function activate(context: vscode.ExtensionContext) {
                         setTimeout(() => {
                             provider.sendPromptFromExtension(`[A.U 히든 커맨드: ${agentLabel} 에이전트가 방금 '${displayName || safeName}' 템플릿 팩 주입받았습니다. 코드 boilerplate ${writtenCount}개 파일 + README. 매트릭스 톤으로 한 줄. "${agentLabel}, ${displayName || safeName} 템플릿 ${writtenCount}개 파일 장착. 다음 작업에 자동 활용." 부가 설명 X.]`);
                         }, 1500);
-                        _safeGitAutoSync(_getBrainDir(), `Auto-Inject Template [${agentId}]: ${safeName}`, provider);
+                        _safeGitAutoSync(brainDir, `Auto-Inject Template [${agentId}]: ${safeName}`, provider);
                         res.writeHead(200, { 'Content-Type': 'application/json' });
                         res.end(JSON.stringify({ success: true, location: tplRoot, agent: agentId, name: safeName, filesWritten: writtenCount }));
                     } catch (e: any) {
@@ -8573,6 +8576,46 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.window.showErrorMessage(`🚫 Connect AI Bridge 초기화 실패: ${e?.message || e}`);
     }
     // ==========================================
+
+    // Brain directory file watcher — auto-sync to GitHub when any file
+    // in the brain folder changes (manual edits, external tools, etc.).
+    // Debounced 5s so rapid multi-file operations emit only one push.
+    let _brainWatcher: vscode.FileSystemWatcher | null = null;
+    let _brainSyncTimer: ReturnType<typeof setTimeout> | null = null;
+
+    function _startBrainWatcher() {
+        if (_brainWatcher) { _brainWatcher.dispose(); _brainWatcher = null; }
+        const bd = _getBrainDir();
+        if (!bd) return;
+        try {
+            _brainWatcher = vscode.workspace.createFileSystemWatcher(
+                new vscode.RelativePattern(vscode.Uri.file(bd), '**/*.{md,json,py,txt,html,tsx,ts,js}')
+            );
+            const triggerSync = () => {
+                if (_brainSyncTimer) clearTimeout(_brainSyncTimer);
+                _brainSyncTimer = setTimeout(() => {
+                    _safeGitAutoSync(_getBrainDir(), 'Auto-sync: brain directory updated', _activeChatProvider);
+                }, 5000);
+            };
+            _brainWatcher.onDidCreate(triggerSync);
+            _brainWatcher.onDidChange(triggerSync);
+            _brainWatcher.onDidDelete(triggerSync);
+            context.subscriptions.push(_brainWatcher);
+            console.log('[Connect AI] Brain watcher active:', bd);
+        } catch (e) {
+            console.error('[Connect AI] Brain watcher failed to start:', e);
+        }
+    }
+
+    _startBrainWatcher();
+    // Re-start watcher when brain path changes in settings
+    context.subscriptions.push(
+        vscode.workspace.onDidChangeConfiguration(e => {
+            if (e.affectsConfiguration('connectAiLab.localBrainPath')) {
+                _startBrainWatcher();
+            }
+        })
+    );
 
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider('connect-ai-lab-v2-view', provider, {
