@@ -5,6 +5,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { spawn, spawnSync } from 'child_process';
+import { _getBrainDir, _isBrainDirExplicitlySet, getCompanyDir, COMPANY_SUBDIR, _expandTilde, _resolvePathInput } from './paths';
+import { AgentDef, AGENTS, AGENT_ORDER, SPECIALIST_IDS } from './agents';
+import { SystemSpecs, getSystemSpecs, estimateModelMemoryGB } from './system-specs';
 
 // ============================================================
 // Security helpers
@@ -699,7 +702,6 @@ function _isLMStudioEngine(ollamaBase: string): boolean {
 
 /* v2.89.66 — _getBrainDir, _isBrainDirExplicitlySet, getCompanyDir, COMPANY_SUBDIR,
    _expandTilde, _resolvePathInput 모두 ./paths.ts 로 이동. 모듈 간 import 일원화. */
-import { _getBrainDir, _isBrainDirExplicitlySet, getCompanyDir, COMPANY_SUBDIR, _expandTilde, _resolvePathInput } from './paths';
 
 async function _ensureBrainDir(): Promise<string | null> {
     if (_isBrainDirExplicitlySet()) {
@@ -781,7 +783,6 @@ const SYSTEM_PROMPT = _loadPrompt('system.md');
 // ============================================================
 /* v2.89.64 — AgentDef interface, AGENTS map, AGENT_ORDER, SPECIALIST_IDS
    moved to src/agents.ts. extension.ts only imports them now. ~118 lines saved. */
-import { AgentDef, AGENTS, AGENT_ORDER, SPECIALIST_IDS } from './agents';
 
 // ───────────────────────────────────────────────────────────────────────────
 // Connected campus world (Phase B-1 — multi-zone layout).
@@ -1356,7 +1357,6 @@ function getAgentModel(agentId: string, fallback: string): string {
   return (map[agentId] || '').trim() || fallback;
 }
 /* v2.89.65 — getSystemSpecs + estimateModelMemoryGB + SystemSpecs type 모두 ./system-specs.ts 로 이동. */
-import { SystemSpecs, getSystemSpecs, estimateModelMemoryGB } from './system-specs';
 
 /* v2.89.27 — 모델 자동 오케스트레이션. 설치된 모델 + 에이전트 역할을 매칭해서
    최적 배정 추천. 사용자는 "✨ 자동 추천" 버튼 한 번으로 완성된 매핑 받음. */
