@@ -1,0 +1,7 @@
+/  /index.html  200
+/home  /  301
+/contact  /#contact  302
+/price  /#price  302
+/pricing  /#price  302
+/faq  /#faq  302
+/*  /index.html  404
