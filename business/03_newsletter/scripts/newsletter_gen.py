@@ -336,10 +336,13 @@ def send_via_mailchimp(newsletter: dict, dry_run: bool = False) -> bool:
             campaign_id = resp.json().get('id', '')
             # 캠페인 콘텐츠 설정
             content_url = f'https://{server}.api.mailchimp.com/3.0/campaigns/{campaign_id}/content'
-            requests.put(content_url, auth=auth, json={
+            put_resp = requests.put(content_url, auth=auth, json={
                 'html': newsletter['html'],
                 'plain_text': newsletter['text'],
             }, timeout=30)
+            if put_resp.status_code not in (200, 204):
+                logger.error(f'[Mailchimp] 콘텐츠 설정 실패: {put_resp.text[:200]}')
+                return False
             logger.info(f'[Mailchimp] ✅ 캠페인 생성: {campaign_id}')
             return True
         logger.error(f'[Mailchimp] 실패: {resp.text[:200]}')
@@ -349,6 +352,52 @@ def send_via_mailchimp(newsletter: dict, dry_run: bool = False) -> bool:
         return False
     except Exception as e:
         logger.error(f'[Mailchimp] 오류: {e}')
+        return False
+
+
+def send_via_beehiiv(newsletter: dict, dry_run: bool = False) -> bool:
+    """
+    Beehiiv API v2로 뉴스레터 발송 (글로벌 타겟).
+    무료 플랜(2,500명)에서 API 제공 — 국내 Stibee 보완용.
+    환경변수: BEEHIIV_API_KEY, BEEHIIV_PUBLICATION_ID
+    """
+    api_key = os.environ.get('BEEHIIV_API_KEY', '')
+    pub_id  = os.environ.get('BEEHIIV_PUBLICATION_ID', '')
+
+    if not api_key or not pub_id:
+        logger.info('[Beehiiv] API 키 미설정 — 건너뜀')
+        return False
+
+    if dry_run:
+        logger.info(f'[dry-run] Beehiiv 발송 시뮬레이션: {newsletter["subject"]}')
+        return True
+
+    try:
+        import requests
+        url = f'https://api.beehiiv.com/v2/publications/{pub_id}/posts'
+        headers = {
+            'Authorization': f'Bearer {api_key}',
+            'Content-Type':  'application/json',
+        }
+        payload = {
+            'subject':       newsletter['subject'],
+            'content_html':  newsletter['html'],
+            'content_text':  newsletter['text'],
+            'status':        'draft',
+            'send_at':       None,
+        }
+        resp = requests.post(url, headers=headers, json=payload, timeout=30)
+        if resp.status_code in (200, 201):
+            post_id = resp.json().get('data', {}).get('id', '')
+            logger.info(f'[Beehiiv] ✅ 포스트 생성: {post_id}')
+            return True
+        logger.error(f'[Beehiiv] 실패: {resp.status_code} {resp.text[:200]}')
+        return False
+    except ImportError:
+        logger.warning('requests 미설치. pip install requests')
+        return False
+    except Exception as e:
+        logger.error(f'[Beehiiv] 오류: {type(e).__name__}')
         return False
 
 
@@ -364,6 +413,7 @@ def run(ch_slug: str, ep_num: int, dry_run: bool = False) -> dict:
     results = {
         'stibee':    send_via_stibee(newsletter, dry_run),
         'mailchimp': send_via_mailchimp(newsletter, dry_run),
+        'beehiiv':   send_via_beehiiv(newsletter, dry_run),
         'saved':     str(saved),
     }
     return results

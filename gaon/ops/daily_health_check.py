@@ -56,7 +56,7 @@ def _load_env():
             line = line.strip()
             if line and not line.startswith('#') and '=' in line:
                 k, v = line.split('=', 1)
-                os.environ.setdefault(k.strip(), v.strip())
+                os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
 
 _load_env()
 
@@ -73,10 +73,11 @@ def check_gemini_api() -> dict:
             result.update(status='skip', detail='GEMINI_API_KEY_01 미설정')
             return result
 
-        url = (
-            f'https://generativelanguage.googleapis.com/v1beta/models?key={api_key}'
-        )
-        req = urllib.request.Request(url, headers={'User-Agent': 'gaon-health-check'})
+        url = 'https://generativelanguage.googleapis.com/v1beta/models'
+        req = urllib.request.Request(url, headers={
+            'User-Agent': 'gaon-health-check',
+            'x-goog-api-key': api_key,
+        })
         with urllib.request.urlopen(req, timeout=10) as resp:
             if resp.status == 200:
                 result.update(status='ok', detail='응답 정상')

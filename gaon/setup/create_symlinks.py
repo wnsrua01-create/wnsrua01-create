@@ -85,18 +85,26 @@ ENSURE_DIRS = [
 def _make_symlink_win(src: str, dst: str, link_type: str) -> bool:
     """
     Windows mklink으로 심볼릭 링크 생성.
-    mklink /D = 디렉토리, mklink = 파일
+    mklink는 CMD 내장 명령이므로 cmd.exe /c 경유 — shell=False 유지로 인젝션 방지.
     """
-    flag = '/D' if link_type == 'dir' else ''
-    cmd = f'mklink {flag} "{dst}" "{src}"'.strip()
+    # 경로에 쉘 메타문자 포함 여부 검사 (인젝션 방지)
+    for path in (src, dst):
+        if any(c in path for c in ('&', '|', ';', '`', '$', '>', '<')):
+            raise ValueError(f'경로에 허용되지 않는 문자 포함: {path}')
+
+    if link_type == 'dir':
+        cmd = ['cmd', '/c', 'mklink', '/D', dst, src]
+    else:
+        cmd = ['cmd', '/c', 'mklink', dst, src]
 
     result = subprocess.run(
         cmd,
-        shell=True,
+        shell=False,          # shell=True 제거 — 인젝션 방지
         capture_output=True,
         encoding='utf-8',
         errors='replace',
         env={**os.environ, 'PYTHONUTF8': '1'},
+        timeout=15,
     )
     return result.returncode == 0
 

@@ -83,7 +83,15 @@ class WanGPAgent:
             agent.poll_job(job_id)
     """
 
+    # 허용된 호스트 목록 (로컬/내부망 전용 — 외부망 노출 금지)
+    _ALLOWED_HOSTS = {'localhost', '127.0.0.1', '::1'}
+
     def __init__(self, host: str = 'localhost'):
+        if host not in self._ALLOWED_HOSTS:
+            raise ValueError(
+                f'보안 정책: WanGP는 로컬호스트만 허용됩니다. '
+                f'요청 host={host!r}'
+            )
         self.host = host
         self.base_url: Optional[str] = None
         self.api_endpoint: Optional[str] = None
@@ -92,9 +100,11 @@ class WanGPAgent:
     # ── 서버 자동 탐색 ─────────────────────────────────────────────────────
 
     def _discover(self) -> bool:
-        """포트 + 엔드포인트를 순차 탐색하여 활성 WanGP 서버 감지."""
+        """포트 + 엔드포인트를 순차 탐색하여 활성 WanGP 서버 감지.
+        HTTP(비암호화) 사용은 로컬호스트 전용이므로 허용 (내부망, 암호화 불필요).
+        """
         for port in WANGP_PORTS:
-            base = f'http://{self.host}:{port}'
+            base = f'http://{self.host}:{port}'  # 로컬 전용 HTTP — 외부망 금지
             try:
                 r = requests.get(base, timeout=3)
                 if r.status_code < 500:
@@ -362,7 +372,8 @@ class WanGPAgent:
                 logger.info(f"저장 완료 (base64): {out}")
                 return
 
-        logger.warning(f"출력 파일 저장 불가 — 응답 데이터 형식 확인 필요: {str(data)[:200]}")
+        type_summary = [type(x).__name__ for x in data]
+        logger.warning(f"출력 파일 저장 불가 — 응답 데이터 형식 확인 필요: {type_summary}")
 
     def _register_job(self, job_id: str, output_path: str) -> None:
         """비동기 작업 정보를 임시 JSON에 기록."""
@@ -392,6 +403,11 @@ if __name__ == '__main__':
     parser.add_argument('--start', type=int, default=1, help='시작 씬 번호')
     parser.add_argument('--end', type=int, default=130, help='끝 씬 번호')
     args = parser.parse_args()
+
+    if not (1 <= args.start <= 130 and 1 <= args.end <= 130 and args.start <= args.end):
+        parser.error(f'씬 범위 오류: --start {args.start} --end {args.end} (유효: 1-130)')
+    if not (1 <= args.ep <= 9999):
+        parser.error(f'에피소드 번호 범위 오류: {args.ep} (1-9999)')
 
     agent = WanGPAgent()
 

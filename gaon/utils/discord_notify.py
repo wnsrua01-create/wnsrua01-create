@@ -43,7 +43,7 @@ def _load_env(env_path: Path = Path('C:/gaon/.env')) -> None:
             line = line.strip()
             if line and not line.startswith('#') and '=' in line:
                 k, v = line.split('=', 1)
-                os.environ.setdefault(k.strip(), v.strip())
+                os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
 
 _load_env()
 
@@ -176,7 +176,7 @@ class DiscordNotifier:
                     return True
                 # Rate limit
                 if r.status_code == 429:
-                    retry_after = r.json().get('retry_after', 1.0)
+                    retry_after = min(float(r.json().get('retry_after', 1.0)), 60.0)
                     logger.warning(f"Discord Rate Limit — {retry_after}초 대기")
                     time.sleep(retry_after)
                     continue
@@ -184,7 +184,7 @@ class DiscordNotifier:
             except requests.exceptions.Timeout:
                 logger.warning(f"Discord 타임아웃 (시도 {attempt})")
             except Exception as e:
-                logger.error(f"Discord 전송 오류: {e}")
+                logger.error(f"Discord 전송 오류: {type(e).__name__}")
 
             if attempt < retries:
                 time.sleep(2 ** attempt)

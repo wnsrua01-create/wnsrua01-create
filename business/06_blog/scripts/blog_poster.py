@@ -61,7 +61,7 @@ def _load_env():
                 line = line.strip()
                 if line and not line.startswith('#') and '=' in line:
                     k, v = line.split('=', 1)
-                    os.environ.setdefault(k.strip(), v.strip())
+                    os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
 
 _load_env()
 
@@ -79,8 +79,12 @@ def _load_channel_config(ch_slug: str) -> dict:
     """channels.json에서 채널 설정 로드."""
     if not CONFIG_PATH.exists():
         return {}
-    with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
-        cfg = json.load(f)
+    try:
+        with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
+            cfg = json.load(f)
+    except json.JSONDecodeError as e:
+        logger.error(f'channels.json 파싱 오류: {e}')
+        return {}
     for chid, info in cfg.get('channels', {}).items():
         if info.get('slug') == ch_slug:
             return info
@@ -97,8 +101,11 @@ def _load_ep_data(ch_slug: str, ep_num: int) -> dict:
     for fname in [f'{ep_str}_data.json', 'data.json', f'{ep_str}.json']:
         p = ep_dir / fname
         if p.exists():
-            with open(p, 'r', encoding='utf-8') as f:
-                return json.load(f)
+            try:
+                with open(p, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+            except json.JSONDecodeError as e:
+                logger.error(f'JSON 파싱 오류 {p.name}: {e}')
     return {}
 
 
@@ -252,15 +259,15 @@ def post_to_tistory(post: dict, dry_run: bool = False) -> bool:
         import requests
         url = 'https://www.tistory.com/apis/post/write'
         params = {
-            'access_token': tistory_token,
-            'output':       'json',
-            'blogName':     tistory_blogid,
-            'title':        post['title'],
-            'content':      post['content'],
-            'visibility':   3,  # 공개
-            'tag':          ','.join(post['tags'][:10]),
+            'output':     'json',
+            'blogName':   tistory_blogid,
+            'title':      post['title'],
+            'content':    post['content'],
+            'visibility': 3,  # 공개
+            'tag':        ','.join(post['tags'][:10]),
         }
-        resp = requests.post(url, data=params, timeout=30)
+        headers = {'Authorization': f'Bearer {tistory_token}'}
+        resp = requests.post(url, data=params, headers=headers, timeout=30)
         if resp.status_code == 200:
             result = resp.json()
             if result.get('tistory', {}).get('status') == '200':
@@ -306,8 +313,22 @@ if __name__ == '__main__':
     parser.add_argument('--dry-run', action='store_true', help='실제 포스팅 없이 초안만 저장')
     args = parser.parse_args()
 
-    slugs    = list(CHANNEL_SLUGS.values()) if args.ch == 'all' else [args.ch]
+    valid_slugs = set(CHANNEL_SLUGS.values())
+    if args.ch == 'all':
+        slugs = list(valid_slugs)
+    elif args.ch in valid_slugs:
+        slugs = [args.ch]
+    else:
+        parser.error(f'알 수 없는 채널 슬러그: {args.ch!r}\n유효 값: {sorted(valid_slugs)}')
+
+    if not 1 <= args.ep <= 9999:
+        parser.error(f'에피소드 번호 범위 오류: {args.ep}')
+
+    valid_platforms = {'naver', 'tistory', 'wordpress'}
     platforms = [p.strip() for p in args.platform.split(',')]
+    for p in platforms:
+        if p not in valid_platforms:
+            parser.error(f'지원하지 않는 플랫폼: {p!r} (지원: {valid_platforms})')
 
     for slug in slugs:
         result = run(slug, args.ep, platforms, args.dry_run)

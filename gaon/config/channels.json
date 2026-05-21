@@ -247,11 +247,25 @@
   "pipeline": {
     "grok_daily_limit": 100,
     "wangp_ports": [8080, 7860, 7861, 8000],
+    "i2v_tiers": {
+      "primary":   "wangp-local (RTX 5070 Ti)",
+      "secondary": "grok-supergrok (100/24h premium scenes)",
+      "tertiary":  "kling-api-fal (fal.ai $0.07-0.17/video fallback)"
+    },
     "llm_tiers": {
       "tier1": "gemini-flash-free",
       "tier2": "gemma4:e4b (ollama localhost:11434)",
       "tier3": "claude-max-api"
     },
+    "newsletter_platforms": {
+      "domestic": "stibee (api.stibee.com)",
+      "global":   "beehiiv (api.beehiiv.com)"
+    },
+    "blog_platforms": {
+      "primary":   "tistory (OAuth Bearer)",
+      "secondary": "naver (API key header)"
+    },
+    "coupang_rate_limit_note": "2026-03-17 Rate Limit 조정됨. 배치 간 sleep(0.3) 이상 유지 필요",
     "ffmpeg_crf": 23,
     "output_resolution": "1920x1080",
     "shorts_resolution": "1080x1920"

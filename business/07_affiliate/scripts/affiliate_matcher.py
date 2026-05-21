@@ -57,7 +57,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-COUPANG_AF_ID = 'AF7354598'
+COUPANG_AF_ID = os.environ.get('COUPANG_AF_ID', 'AF7354598')
 
 def _load_env():
     for p in [Path('C:/gaon/.env'), Path('D:/1인기업/.env')]:
@@ -68,7 +68,7 @@ def _load_env():
                 line = line.strip()
                 if line and not line.startswith('#') and '=' in line:
                     k, v = line.split('=', 1)
-                    os.environ.setdefault(k.strip(), v.strip())
+                    os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
 
 _load_env()
 
@@ -114,8 +114,11 @@ def _load_ep_data(ch_slug: str, ep_num: int) -> dict:
     for fname in [f'{ep_str}_data.json', 'data.json']:
         p = ep_dir / fname
         if p.exists():
-            with open(p, 'r', encoding='utf-8') as f:
-                return json.load(f)
+            try:
+                with open(p, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+            except json.JSONDecodeError as e:
+                logger.error(f'JSON 파싱 오류 {p.name}: {e}')
     return {}
 
 
@@ -175,7 +178,7 @@ def _make_coupang_api_request(keyword: str) -> Optional[list]:
         signature  = hmac.new(
             secret_key.encode('utf-8'),
             message.encode('utf-8'),
-            hashlib.sha256,
+            hashlib.sha256,          # HMAC-SHA256 (쿠팡파트너스 API 요구사항)
         ).hexdigest()
 
         url = f'https://api-gateway.coupang.com{path}?{query}'
@@ -213,7 +216,7 @@ def generate_affiliate_links(ch_slug: str, ep_num: int) -> list[dict]:
                 'af_id':       COUPANG_AF_ID,
                 'api_used':    prod.get('api', True),
             })
-        time.sleep(0.2)  # API rate limit
+        time.sleep(0.3)  # API rate limit (2026-03-17 조정 이후 0.3s 이상 유지)
 
     return links
 
@@ -257,8 +260,12 @@ def build_youtube_description(ch_slug: str, ep_num: int,
 def _load_all_channels() -> dict:
     if not CONFIG_PATH.exists():
         return {}
-    with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
-        return json.load(f).get('channels', {})
+    try:
+        with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
+            return json.load(f).get('channels', {})
+    except json.JSONDecodeError as e:
+        logger.error(f'channels.json 파싱 오류: {e}')
+        return {}
 
 
 def save_links(ch_slug: str, ep_num: int, links: list[dict],
@@ -322,7 +329,16 @@ if __name__ == '__main__':
                         help='API 호출 없이 구조 테스트')
     args = parser.parse_args()
 
-    slugs = list(CHANNEL_SLUGS.values()) if args.ch == 'all' else [args.ch]
+    valid_slugs = set(CHANNEL_SLUGS.values())
+    if args.ch == 'all':
+        slugs = list(valid_slugs)
+    elif args.ch in valid_slugs:
+        slugs = [args.ch]
+    else:
+        parser.error(f'알 수 없는 채널 슬러그: {args.ch!r}\n유효 값: {sorted(valid_slugs)}')
+
+    if args.ep < 1 or args.ep > 9999:
+        parser.error(f'에피소드 번호 범위 오류: {args.ep} (1-9999)')
 
     for slug in slugs:
         result = run(slug, args.ep, args.dry_run)
