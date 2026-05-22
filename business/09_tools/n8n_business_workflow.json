@@ -1,0 +1,142 @@
+{
+  "name": "GAONIX 1인기업 자동화 워크플로우",
+  "nodes": [
+    {
+      "id": "trigger_file_watch",
+      "type": "n8n-nodes-base.localFileTrigger",
+      "name": "완성본 MP4 감지",
+      "parameters": {
+        "path": "D:\\gaon_data\\finals",
+        "recursive": true,
+        "events": ["add"],
+        "filter": "*_final.mp4"
+      },
+      "position": [240, 300]
+    },
+    {
+      "id": "parse_filename",
+      "type": "n8n-nodes-base.code",
+      "name": "파일명 파싱",
+      "parameters": {
+        "jsCode": "const filePath = $input.first().json.path;\nconst match = filePath.match(/ch(\\d+)_([^\\\\]+)\\\\ep(\\d+)_final\\.mp4/);\nif (!match) throw new Error('파일명 파싱 실패: ' + filePath);\nconst channelMap = {\n  '01':'senior','02':'finance','03':'health','04':'pension','05':'psych',\n  '06':'realty','07':'parent','08':'cooking','09':'aitech','10':'travel',\n  '11':'beauty','12':'growth','13':'history','14':'pets','15':'home',\n  '16':'midlife','17':'money'\n};\nconst chNum = match[1];\nconst epNum = parseInt(match[3]);\nreturn [{\n  json: {\n    file_path: filePath,\n    ch_num: chNum,\n    ch_slug: channelMap[chNum] || match[2],\n    ep_num: epNum,\n    ep_str: `ep${String(epNum).padStart(2,'0')}`,\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "position": [460, 300]
+    },
+    {
+      "id": "branch_all",
+      "type": "n8n-nodes-base.splitInBatches",
+      "name": "4개 브랜치 병렬 실행",
+      "parameters": {"batchSize": 1},
+      "position": [680, 300]
+    },
+    {
+      "id": "branch1_blog",
+      "type": "n8n-nodes-base.executeCommand",
+      "name": "Branch1: 블로그 포스팅 (즉시)",
+      "parameters": {
+        "command": "D:\\programs\\python.exe -X utf8 D:\\1인기업\\06_blog\\scripts\\blog_poster.py --ch {{$json.ch_slug}} --ep {{$json.ep_num}}"
+      },
+      "position": [900, 100]
+    },
+    {
+      "id": "branch2_newsletter_wait",
+      "type": "n8n-nodes-base.wait",
+      "name": "1시간 대기",
+      "parameters": {"amount": 1, "unit": "hours"},
+      "position": [900, 250]
+    },
+    {
+      "id": "branch2_newsletter",
+      "type": "n8n-nodes-base.executeCommand",
+      "name": "Branch2: 뉴스레터 발송",
+      "parameters": {
+        "command": "D:\\programs\\python.exe -X utf8 D:\\1인기업\\03_newsletter\\scripts\\newsletter_gen.py --ch {{$json.ch_slug}} --ep {{$json.ep_num}}"
+      },
+      "position": [1100, 250]
+    },
+    {
+      "id": "branch3_affiliate",
+      "type": "n8n-nodes-base.executeCommand",
+      "name": "Branch3: 제휴링크 생성 (즉시)",
+      "parameters": {
+        "command": "D:\\programs\\python.exe -X utf8 D:\\1인기업\\07_affiliate\\scripts\\affiliate_matcher.py --ch {{$json.ch_slug}} --ep {{$json.ep_num}}"
+      },
+      "position": [900, 400]
+    },
+    {
+      "id": "branch4_discord",
+      "type": "n8n-nodes-base.httpRequest",
+      "name": "Branch4: Discord 알림 (즉시)",
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.DISCORD_WEBHOOK_URL}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [{"name": "Content-Type", "value": "application/json"}]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "embeds",
+              "value": "=[{\"description\":\"✅ EP 완성: **{{$json.ch_slug}}** EP{{$json.ep_str}} — 업로드 대기 중\",\"color\":4496196,\"footer\":{\"text\":\"GAON NEXUS • {{$json.timestamp}}\"}}]"
+            }
+          ]
+        }
+      },
+      "position": [900, 550]
+    },
+    {
+      "id": "branch5_shorts",
+      "type": "n8n-nodes-base.executeCommand",
+      "name": "Branch5: Shorts 자동 추출",
+      "parameters": {
+        "command": "D:\\programs\\python.exe -X utf8 D:\\1인기업\\02_shorts\\scripts\\shorts_extractor.py --ch {{$json.ch_slug}} --ep {{$json.ep_num}}"
+      },
+      "position": [900, 700]
+    },
+    {
+      "id": "error_handler",
+      "type": "n8n-nodes-base.httpRequest",
+      "name": "에러 발생 시 Discord 알림",
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.DISCORD_WEBHOOK_URL}}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "content",
+              "value": "🔴 워크플로우 오류: {{$json.error.message || 'Unknown error'}}"
+            }
+          ]
+        }
+      },
+      "position": [1300, 400]
+    }
+  ],
+  "connections": {
+    "trigger_file_watch": {"main": [[{"node": "parse_filename", "type": "main", "index": 0}]]},
+    "parse_filename": {"main": [[{"node": "branch_all", "type": "main", "index": 0}]]},
+    "branch_all": {
+      "main": [
+        [{"node": "branch1_blog", "type": "main", "index": 0}],
+        [{"node": "branch2_newsletter_wait", "type": "main", "index": 0}],
+        [{"node": "branch3_affiliate", "type": "main", "index": 0}],
+        [{"node": "branch4_discord", "type": "main", "index": 0}],
+        [{"node": "branch5_shorts", "type": "main", "index": 0}]
+      ]
+    },
+    "branch2_newsletter_wait": {"main": [[{"node": "branch2_newsletter", "type": "main", "index": 0}]]}
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "meta": {
+    "description": "GAONIX 1인기업 자동화 — 완성본 MP4 감지 시 블로그/뉴스레터/제휴링크/Discord/Shorts 자동 처리",
+    "version": "1.0",
+    "created": "2026-05-21"
+  }
+}
