@@ -132,6 +132,102 @@ def check_wangp() -> dict:
     return result
 
 
+def check_fal_kling_api() -> dict:
+    """fal.ai Kling API 연결 및 키 유효성 확인 (2026년 3단계 I2V 폴백 핵심)."""
+    result = {'name': 'fal.ai Kling API', 'status': 'unknown', 'detail': ''}
+    try:
+        import urllib.request
+        fal_key = os.environ.get('FAL_KEY', '')
+        if not fal_key:
+            result.update(status='skip', detail='FAL_KEY 미설정 (Kling I2V 폴백 비활성)')
+            return result
+
+        url = 'https://api.fal.ai/v1/models?limit=1'
+        req = urllib.request.Request(url, headers={
+            'User-Agent': 'gaon-health-check',
+            'Authorization': f'Key {fal_key}',
+        })
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            if resp.status == 200:
+                result.update(status='ok', detail='연결 및 API Key 인증 성공 (Kling AI 사용 가능)')
+            else:
+                result.update(status='warn', detail=f'HTTP 상태 코드: {resp.status}')
+    except Exception as e:
+        result.update(status='fail', detail=f'인증/연결 실패: {str(e)[:60]}')
+    return result
+
+
+def check_beehiiv_api() -> dict:
+    """Beehiiv 글로벌 뉴스레터 API 연결 및 키 유효성 확인."""
+    result = {'name': 'Beehiiv API', 'status': 'unknown', 'detail': ''}
+    try:
+        import urllib.request
+        beehiiv_key = os.environ.get('BEEHIIV_API_KEY', '')
+        if not beehiiv_key:
+            result.update(status='skip', detail='BEEHIIV_API_KEY 미설정 (글로벌 뉴스레터 플랫폼 미사용)')
+            return result
+
+        url = 'https://api.beehiiv.com/v2/publications'
+        req = urllib.request.Request(url, headers={
+            'User-Agent': 'gaon-health-check',
+            'Authorization': f'Bearer {beehiiv_key}',
+        })
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            if resp.status == 200:
+                result.update(status='ok', detail='연결 및 API Key 인증 성공 (Beehiiv 연동 완료)')
+            else:
+                result.update(status='warn', detail=f'HTTP 상태 코드: {resp.status}')
+    except Exception as e:
+        result.update(status='fail', detail=f'인증/연결 실패: {str(e)[:60]}')
+    return result
+
+
+def check_external_apis() -> dict:
+    """주요 외부 API 키 존재 검사 및 2026년 경쟁사 플랫폼 무결성 진단."""
+    result = {'name': '2026 플랫폼 정합성', 'status': 'ok', 'detail': ''}
+    warnings = []
+    missing_keys = []
+    
+    # 1. 필수 API 키 누락 검사
+    required_keys = {
+        'FAL_KEY': 'Kling AI (fal.ai)',
+        'DISCORD_WEBHOOK_URL': 'Discord 알림',
+        'COUPANG_AF_ID': '쿠팡 파트너스'
+    }
+    
+    for key, desc in required_keys.items():
+        if not os.environ.get(key, ''):
+            missing_keys.append(f"{desc}({key})")
+            
+    # 2. 선택적/글로벌 API 키 검사
+    optional_keys = {
+        'BEEHIIV_API_KEY': 'Beehiiv 글로벌 뉴스레터',
+        'STIBEE_API_KEY': 'Stibee 국내 뉴스레터'
+    }
+    for key, desc in optional_keys.items():
+        if not os.environ.get(key, ''):
+            warnings.append(f"{desc}({key}) 미설정")
+            
+    # 3. 2026년 AI 비디오 경쟁사 및 플랫폼 트렌드 안내 (Sora 셧다운 알림)
+    warnings.append("⚠️ [Sora Sunset 경고] OpenAI Sora API가 2026-09-24 완전 셧다운 예정입니다. 현재 3단계 폴백(WanGP, Grok, Kling API)을 유지하십시오. Luma Ray 3, Google Veo 3.1, Runway Gen-4/4.5가 강력한 대안으로 추천됩니다.")
+    
+    if missing_keys:
+        result.update(
+            status='warn',
+            detail=f"필수 API 누락: {', '.join(missing_keys)} | " + " | ".join(warnings)
+        )
+    elif warnings:
+        result.update(
+            status='warn',
+            detail="주의 요망 | " + " | ".join(warnings)
+        )
+    else:
+        result.update(status='ok', detail='모든 핵심 API 키 설정 완료 및 2026 경쟁사/플랫폼 정합성 확보')
+        
+    return result
+
+
+
 def check_n8n() -> dict:
     """n8n Docker 컨테이너 상태 확인 (port 5678)."""
     result = {'name': 'n8n (Docker)', 'status': 'unknown', 'detail': ''}
@@ -339,6 +435,9 @@ def run_health_check(send_discord: bool = True) -> list[dict]:
         ('Gemini API',    check_gemini_api),
         ('Ollama',        check_ollama),
         ('WanGP',         check_wangp),
+        ('fal.ai Kling API', check_fal_kling_api),
+        ('Beehiiv API',   check_beehiiv_api),
+        ('2026 플랫폼 정합성', check_external_apis),
         ('n8n',           check_n8n),
         ('에러 로그',     check_error_log),
         ('완성본 현황',   check_finals_count),
