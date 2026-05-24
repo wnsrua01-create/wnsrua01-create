@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LoopForge AI — 카페·음식점 리뷰 AI 자동화 | 사장님 전문</title>
+<meta name="description" content="카페·음식점 사장님을 위한 네이버 리뷰 AI 자동화. 답글·부정 리뷰 대응·블로그 초안을 AI가 만들어드립니다. AI 초안 자동 게시 없음. 10분 무료 진단.">
+<meta name="keywords" content="네이버 리뷰 자동화, 리뷰 답글 AI, 카페 음식점 자동화, 부정 리뷰 대응, 블로그 홍보 자동화, 소상공인 AI">
+<meta name="robots" content="index, follow">
+<meta property="og:type" content="website">
+<meta property="og:title" content="LoopForge AI — 카페·음식점 리뷰 AI 자동화">
+<meta property="og:description" content="카페·음식점 사장님 전용. 리뷰 관리 시간을 AI로 단축. AI 초안 제공, 자동 게시 없음. 10분 무료 진단.">
+<meta property="og:url" content="https://loopforge-2v1.pages.dev">
+<meta property="og:image" content="https://loopforge-2v1.pages.dev/og-image.png">
+<meta property="og:site_name" content="LoopForge AI">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="LoopForge AI — 카페·음식점 리뷰 AI 자동화">
+<meta name="twitter:description" content="카페·음식점 사장님 전용. AI 초안 자동 게시 없음. 10분 무료 진단.">
+<link rel="canonical" href="https://loopforge-2v1.pages.dev">
+
+<!-- Cloudflare Turnstile -->
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+<!-- Google Analytics 4 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-NMYD46BR86"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-NMYD46BR86');
+</script>
+
+<!-- FAQ JSON-LD Schema -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type":"Question","name":"AI 답글이 자동으로 게시되나요?","acceptedAnswer":{"@type":"Answer","text":"아니오. 모든 AI 생성 답글은 사장님이 직접 검토·수정 후 게시하는 초안입니다. 자동 게시는 절대 없습니다."}},
+    {"@type":"Question","name":"카페·음식점에 최적화되어 있나요?","acceptedAnswer":{"@type":"Answer","text":"네, 카페·음식점 사장님을 최우선 타깃으로 프롬프트를 최적화했습니다."}},
+    {"@type":"Question","name":"무료 진단은 정말 무료인가요?","acceptedAnswer":{"@type":"Answer","text":"네, 완전 무료입니다. 리뷰 샘플 3~10개를 보내주시면 24시간 내 리포트를 드립니다."}},
+    {"@type":"Question","name":"개인정보는 안전한가요?","acceptedAnswer":{"@type":"Answer","text":"리뷰 작성자 정보는 분석 목적으로만 사용되며 HTTPS로 암호화 전송됩니다. 제3자에게 제공되지 않습니다."}}
+  ]
+}
+</script>
+
+<style>
+:root {
+  --bg:#080c10;--bg2:#0d1117;--bg3:#0f1420;--card:#111820;--card2:#141c26;
+  --accent:#00E5A0;--accent-d:#00b87a;--accent2:#0066FF;--accent3:#FFB300;
+  --text:#f2f4f7;--muted:#8896a8;--muted2:#4a5568;--border:rgba(255,255,255,0.07);
+  --border2:rgba(255,255,255,0.13);--glow:rgba(0,229,160,0.15);
+  --font:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif;
+  --r:12px;--r-lg:18px;--shadow:0 4px 24px rgba(0,0,0,0.4);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;}
+body{background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.7;overflow-x:hidden;}
+a{color:inherit;text-decoration:none;}
+img{max-width:100%;height:auto;}
+.skip-link{position:absolute;top:-40px;left:1rem;background:var(--accent);color:#000;padding:0.5rem 1rem;border-radius:4px;font-weight:700;z-index:9999;transition:top .2s;}
+.skip-link:focus{top:1rem;}
+#progress-bar{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%;z-index:200;transition:width .1s;}
+nav{display:flex;justify-content:space-between;align-items:center;padding:1rem 4rem;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(8,12,16,0.94);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);z-index:100;}
+.logo{font-weight:900;font-size:1.2rem;letter-spacing:-0.04em;}
+.logo span{color:var(--accent);}
+.nav-links{display:flex;align-items:center;gap:2rem;}
+.nav-links a{font-size:0.88rem;color:var(--muted);transition:color .2s;}
+.nav-links a:hover{color:var(--text);}
+.nav-cta{background:var(--accent);color:#000;padding:0.52rem 1.3rem;border-radius:7px;font-weight:800;font-size:0.86rem;transition:background .2s,transform .15s;white-space:nowrap;}
+.nav-cta:hover{background:var(--accent-d);transform:translateY(-1px);}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:6px;}
+.hamburger span{display:block;width:22px;height:2px;background:var(--text);border-radius:2px;transition:.3s;}
+.hamburger.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px);}
+.hamburger.open span:nth-child(2){opacity:0;}
+.hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px);}
+.mobile-menu{display:none;position:fixed;inset:0;background:rgba(8,12,16,0.98);z-index:200;flex-direction:column;align-items:center;justify-content:center;gap:2.5rem;}
+.mobile-menu.open{display:flex;}
+.mobile-menu a{color:var(--text);font-size:1.6rem;font-weight:900;transition:color .2s;}
+.mobile-menu a:hover,.mobile-menu a.accent{color:var(--accent);}
+.mobile-close{position:absolute;top:1.5rem;right:1.5rem;background:none;border:1px solid var(--border);color:var(--text);width:40px;height:40px;border-radius:50%;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.ticker{background:var(--accent);color:#000;padding:0.55rem 0;overflow:hidden;white-space:nowrap;font-weight:800;font-size:0.8rem;letter-spacing:0.05em;}
+.ticker-inner{display:inline-block;animation:ticker 28s linear infinite;}
+@keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.hero-wrap{position:relative;background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(0,229,160,0.12) 0%,transparent 70%),radial-gradient(ellipse 60% 40% at 80% 50%,rgba(0,102,255,0.08) 0%,transparent 60%),var(--bg);overflow:hidden;}
+.hero-wrap::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2300E5A0' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");pointer-events:none;}
+.hero{max-width:900px;margin:0 auto;padding:7rem 2rem 5rem;text-align:center;position:relative;}
+.badge{display:inline-flex;align-items:center;gap:0.4rem;background:rgba(0,229,160,0.1);color:var(--accent);border:1px solid rgba(0,229,160,0.25);padding:0.4rem 1.1rem;border-radius:100px;font-size:0.76rem;letter-spacing:0.07em;margin-bottom:2rem;font-weight:700;}
+.hero h1{font-size:clamp(2.6rem,5.5vw,4.2rem);font-weight:900;line-height:1.08;margin-bottom:1.5rem;letter-spacing:-0.025em;}
+.hero h1 em{color:var(--accent);font-style:normal;}
+.hero-sub{font-size:1.08rem;color:var(--muted);max-width:560px;margin:0 auto 2rem;line-height:1.75;}
+.diff-box{background:linear-gradient(135deg,rgba(0,229,160,0.06),rgba(0,102,255,0.04));border:1px solid rgba(0,229,160,0.22);border-radius:var(--r-lg);padding:1.4rem 2rem;margin:0 auto 2.2rem;max-width:680px;font-size:0.97rem;line-height:1.7;}
+.diff-box strong{color:var(--accent);}
+.hero-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem;}
+.btn-primary{background:var(--accent);color:#000;padding:0.95rem 2.4rem;border-radius:8px;font-weight:800;font-size:1rem;display:inline-flex;align-items:center;gap:0.4rem;transition:background .2s,transform .15s,box-shadow .2s;box-shadow:0 0 0 rgba(0,229,160,0);}
+.btn-primary:hover{background:var(--accent-d);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,229,160,0.25);}
+.btn-ghost{border:1px solid var(--border2);color:var(--text);padding:0.95rem 2.4rem;border-radius:8px;font-size:1rem;transition:.2s;}
+.btn-ghost:hover{border-color:rgba(255,255,255,0.28);background:rgba(255,255,255,0.04);}
+.safe-box{background:rgba(0,229,160,0.05);border:1px solid rgba(0,229,160,0.18);border-radius:var(--r-lg);padding:1.6rem 2rem;max-width:720px;margin:0 auto;text-align:center;}
+.safe-box h3{font-size:0.9rem;font-weight:800;color:var(--accent);margin-bottom:0.5rem;}
+.safe-box p{font-size:0.9rem;color:var(--muted);line-height:1.7;}
+.safe-box strong{color:var(--text);}
+.stats-bar{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:2.5rem 2rem;}
+.stats-inner{max-width:800px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:2rem;text-align:center;}
+.stat-num{font-size:2.4rem;font-weight:900;color:var(--accent);letter-spacing:-0.03em;line-height:1;margin-bottom:0.4rem;}
+.stat-label{font-size:0.82rem;color:var(--muted);}
+.section{padding:5.5rem 2rem;max-width:1100px;margin:0 auto;}
+.section-label{font-size:0.7rem;letter-spacing:0.16em;color:var(--accent);text-transform:uppercase;margin-bottom:0.5rem;font-weight:700;}
+.section-title{font-size:clamp(1.9rem,3vw,2.7rem);font-weight:900;line-height:1.12;margin-bottom:0.8rem;letter-spacing:-0.02em;}
+.section-sub{font-size:1rem;color:var(--muted);margin-bottom:2.5rem;}
+.pain-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.2rem;margin-top:2.5rem;}
+.pain-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:1.8rem 1.5rem;transition:border-color .2s,transform .2s;}
+.pain-card:hover{border-color:rgba(0,229,160,0.25);transform:translateY(-3px);}
+.pain-num{font-size:2rem;font-weight:900;color:var(--accent);margin-bottom:0.5rem;letter-spacing:-0.03em;}
+.pain-card h3{font-size:0.9rem;font-weight:700;margin-bottom:0.4rem;}
+.pain-card p{font-size:0.84rem;color:var(--muted);line-height:1.6;}
+.flow-section{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:5.5rem 2rem;}
+.flow-inner{max-width:1100px;margin:0 auto;}
+.ba-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(440px,1fr));gap:1.5rem;margin-top:2.5rem;}
+.ba-card{background:var(--card2);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;}
+.ba-header{padding:1rem 1.5rem;background:var(--bg3);border-bottom:1px solid var(--border);font-weight:700;font-size:0.92rem;display:flex;align-items:center;gap:0.5rem;}
+.ba-body{padding:1.4rem;}
+.ba-lbl{font-size:0.72rem;letter-spacing:0.1em;color:var(--muted);text-transform:uppercase;margin-bottom:0.4rem;font-weight:600;}
+.original{background:rgba(255,255,255,0.04);padding:1rem;border-radius:8px;margin-bottom:1rem;font-size:0.88rem;color:var(--muted);line-height:1.65;}
+.ai-out{background:rgba(0,229,160,0.07);padding:1rem;border-radius:8px;border-left:3px solid var(--accent);font-size:0.88rem;line-height:1.65;}
+.flow-steps{display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;margin-top:2.8rem;}
+.flow-step{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1.4rem 1.2rem;position:relative;text-align:center;transition:border-color .2s;}
+.flow-step:hover{border-color:rgba(0,229,160,0.3);}
+.step-num{width:36px;height:36px;border-radius:50%;background:rgba(0,229,160,0.12);color:var(--accent);font-weight:900;font-size:0.85rem;display:flex;align-items:center;justify-content:center;margin:0 auto 0.8rem;}
+.flow-step h3{font-size:0.88rem;font-weight:700;margin-bottom:0.4rem;}
+.flow-step p{font-size:0.8rem;color:var(--muted);line-height:1.55;}
+.roi-section{padding:5rem 2rem;background:var(--bg3);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.roi-inner{max-width:700px;margin:0 auto;text-align:center;}
+.roi-box{background:var(--card2);border:1px solid var(--border2);border-radius:var(--r-lg);padding:2.5rem 2rem;margin-top:2rem;}
+.roi-slider-label{font-size:0.88rem;color:var(--muted);margin-bottom:0.8rem;}
+input[type="range"]{width:100%;height:6px;border-radius:3px;background:var(--border2);outline:none;-webkit-appearance:none;cursor:pointer;}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--accent);cursor:pointer;}
+.roi-result{margin-top:2rem;display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.2rem;}
+.roi-metric{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.2rem;}
+.roi-val{font-size:1.8rem;font-weight:900;color:var(--accent);letter-spacing:-0.02em;}
+.roi-key{font-size:0.78rem;color:var(--muted);margin-top:0.3rem;}
+.price-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.2rem;margin-top:3rem;}
+.price-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:2rem;position:relative;transition:transform .2s,border-color .2s;}
+.price-card:hover{transform:translateY(-4px);}
+.price-card.featured{border-color:var(--accent);background:linear-gradient(145deg,rgba(0,229,160,0.05),var(--card));}
+.price-card.hot{border-color:var(--accent3);background:linear-gradient(145deg,rgba(255,179,0,0.05),var(--card));}
+.feat-badge,.hot-badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);font-size:0.7rem;font-weight:900;padding:0.28rem 1rem;border-radius:100px;white-space:nowrap;}
+.feat-badge{background:var(--accent);color:#000;}
+.hot-badge{background:var(--accent3);color:#000;}
+.price-card h3{font-size:0.85rem;font-weight:700;color:var(--muted);margin-bottom:0.6rem;}
+.price-tag{font-size:2.1rem;font-weight:900;letter-spacing:-0.03em;margin-bottom:1rem;}
+.price-tag span{font-size:0.85rem;font-weight:500;color:var(--muted);}
+.price-card ul{list-style:none;display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1.5rem;}
+.price-card ul li{font-size:0.86rem;padding-left:1.3rem;position:relative;}
+.price-card ul li::before{content:'✓';color:var(--accent);position:absolute;left:0;font-weight:900;}
+.price-btn{display:block;text-align:center;padding:0.78rem;border-radius:8px;font-weight:700;font-size:0.88rem;border:1px solid var(--border2);color:var(--text);transition:.2s;cursor:pointer;background:transparent;}
+.price-btn:hover{border-color:rgba(255,255,255,0.28);background:rgba(255,255,255,0.04);}
+.price-btn.accent{background:var(--accent);color:#000;border-color:var(--accent);}
+.price-btn.accent:hover{background:var(--accent-d);}
+.price-btn.gold{background:var(--accent3);color:#000;border-color:var(--accent3);}
+.micro{font-size:0.75rem;color:var(--muted);text-align:center;margin-top:0.6rem;}
+.proof-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.2rem;margin-top:2.5rem;}
+.proof-card{background:var(--card2);border:1px solid var(--border);border-radius:var(--r-lg);padding:1.8rem;transition:border-color .2s;}
+.proof-card:hover{border-color:rgba(0,229,160,0.2);}
+.stars{color:var(--accent3);font-size:0.9rem;margin-bottom:0.9rem;letter-spacing:0.1em;}
+.proof-card blockquote{font-size:0.9rem;color:var(--text);line-height:1.7;margin-bottom:1rem;font-style:normal;}
+.proof-author{font-size:0.78rem;color:var(--muted);font-weight:600;}
+.proof-notice{font-size:0.76rem;color:var(--muted2);margin-top:1.5rem;text-align:center;}
+.faq-section{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:5rem 2rem;}
+.faq-inner{max-width:720px;margin:0 auto;}
+.faq-list{margin-top:2.2rem;display:flex;flex-direction:column;gap:0.8rem;}
+.faq-item{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
+.faq-q{width:100%;text-align:left;padding:1.2rem 1.5rem;background:none;border:none;color:var(--text);font-size:0.95rem;font-weight:700;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:color .2s;}
+.faq-q:hover{color:var(--accent);}
+.faq-icon{font-size:1.3rem;font-weight:400;color:var(--muted);transition:transform .3s;}
+.faq-item.open .faq-icon{transform:rotate(45deg);}
+.faq-a{display:none;padding:0 1.5rem 1.2rem;}
+.faq-item.open .faq-a{display:block;}
+.faq-a p{font-size:0.9rem;color:var(--muted);line-height:1.7;}
+.cta-section{padding:6rem 2rem;text-align:center;background:radial-gradient(ellipse 70% 50% at 50% 0%,rgba(0,229,160,0.08) 0%,transparent 70%),var(--bg);}
+.cta-section h2{font-size:clamp(1.8rem,3.5vw,2.6rem);font-weight:900;line-height:1.15;margin-bottom:1rem;letter-spacing:-0.02em;}
+.cta-section>p{color:var(--muted);max-width:560px;margin:0 auto 2.2rem;}
+.cta-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem;}
+.btn-kakao{background:#FEE500;color:#000;padding:0.95rem 2rem;border-radius:8px;font-weight:800;font-size:0.95rem;display:inline-flex;align-items:center;gap:0.4rem;transition:.2s;}
+.btn-kakao:hover{background:#f0d800;transform:translateY(-1px);}
+.contact-form{max-width:560px;margin:0 auto;background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:2.5rem;}
+.form-title{font-size:1rem;font-weight:800;margin-bottom:1.6rem;text-align:center;color:var(--accent);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.form-group{margin-bottom:1.3rem;}
+.form-group label{display:block;font-size:0.83rem;color:var(--muted);margin-bottom:0.45rem;font-weight:700;}
+.form-group input,.form-group select,.form-group textarea{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:0.88rem 1rem;color:var(--text);font-size:1rem;font-family:var(--font);transition:border-color .2s;min-height:44px;}
+.form-group select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238896a8' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 1rem center;padding-right:2.5rem;}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,229,160,0.12);}
+.form-group textarea{min-height:110px;resize:vertical;}
+.form-agree{margin:1.3rem 0 0.8rem;}
+.form-agree label{display:flex;align-items:flex-start;gap:0.6rem;cursor:pointer;font-size:0.86rem;line-height:1.55;margin-bottom:0.5rem;}
+.form-agree input[type="checkbox"]{margin-top:3px;accent-color:var(--accent);width:16px;height:16px;min-width:16px;}
+.form-submit{width:100%;background:var(--accent);color:#000;border:none;border-radius:8px;padding:1.1rem;font-weight:900;font-size:1rem;cursor:pointer;transition:.2s;margin-top:0.8rem;min-height:48px;font-family:var(--font);}
+.form-submit:hover{background:var(--accent-d);}
+.form-submit:disabled{opacity:0.55;cursor:not-allowed;}
+.form-error{display:none;background:rgba(255,80,80,0.12);color:#ff8080;border:1px solid rgba(255,80,80,0.25);border-radius:8px;padding:0.9rem;margin-top:0.8rem;text-align:center;font-size:0.9rem;}
+.form-success{display:none;text-align:center;padding:2.5rem 1rem;}
+.form-success .icon{font-size:3.5rem;margin-bottom:1rem;}
+.form-success h4{font-size:1.2rem;font-weight:800;margin-bottom:0.6rem;}
+.form-privacy{font-size:0.76rem;color:var(--muted);text-align:center;margin-top:1rem;line-height:1.5;}
+.float-cta{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--accent);color:#000;border:none;border-radius:100px;padding:0.85rem 1.6rem;font-weight:900;font-size:0.9rem;cursor:pointer;box-shadow:0 4px 20px rgba(0,229,160,0.35);transition:transform .2s,opacity .3s;opacity:0;pointer-events:none;z-index:90;font-family:var(--font);}
+.float-cta.visible{opacity:1;pointer-events:auto;}
+.float-cta:hover{transform:translateY(-2px);}
+.exit-banner{display:none;position:fixed;top:0;left:0;right:0;background:var(--accent);color:#000;padding:0.9rem 2rem;z-index:300;font-weight:800;font-size:0.9rem;text-align:center;gap:1rem;align-items:center;justify-content:center;}
+.exit-banner.show{display:flex;}
+.exit-banner a{background:#000;color:var(--accent);padding:0.4rem 1.2rem;border-radius:100px;font-size:0.85rem;}
+.exit-close{position:absolute;right:1rem;background:none;border:none;font-size:1.3rem;cursor:pointer;color:#000;font-weight:900;}
+footer{background:var(--bg2);border-top:1px solid var(--border);padding:4rem 2rem 2rem;}
+.footer-top{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 2fr;gap:3rem;margin-bottom:3rem;}
+.footer-logo{font-size:1.2rem;font-weight:900;letter-spacing:-0.04em;margin-bottom:0.6rem;}
+.footer-logo span{color:var(--accent);}
+.footer-brand p{font-size:0.85rem;color:var(--muted);line-height:1.7;}
+.footer-links{display:flex;flex-wrap:wrap;gap:0.8rem 2rem;align-items:flex-start;}
+.footer-links a{font-size:0.85rem;color:var(--muted);transition:color .2s;}
+.footer-links a:hover{color:var(--text);}
+.footer-biz{max-width:1100px;margin:0 auto;font-size:0.78rem;color:var(--muted2);line-height:1.9;padding-top:2rem;border-top:1px solid var(--border);}
+.footer-biz a{color:var(--muted);text-decoration:underline;}
+.footer-bottom{max-width:1100px;margin:1.2rem auto 0;font-size:0.76rem;color:var(--muted2);}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:500;align-items:center;justify-content:center;padding:1.5rem;}
+.modal-bg.open{display:flex;}
+.modal-box{background:var(--card);border:1px solid var(--border2);border-radius:var(--r-lg);padding:2.5rem;max-width:500px;width:100%;position:relative;max-height:90vh;overflow-y:auto;}
+.modal-close-btn{position:absolute;top:1.2rem;right:1.2rem;background:none;border:none;color:var(--muted);font-size:1.4rem;cursor:pointer;}
+.modal-box h3{font-size:1.1rem;font-weight:800;margin-bottom:1.4rem;}
+.modal-box p{font-size:0.88rem;color:var(--muted);margin-bottom:0.7rem;line-height:1.65;}
+.modal-box strong{color:var(--text);}
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .6s cubic-bezier(0.25,0.1,0.25,1),transform .6s cubic-bezier(0.25,0.1,0.25,1);}
+.reveal.visible{opacity:1;transform:translateY(0);}
+@media (max-width:900px){.flow-steps{grid-template-columns:repeat(3,1fr);}.footer-top{grid-template-columns:1fr;gap:2rem;}}
+@media (max-width:768px){nav{padding:1rem 1.5rem;}.nav-links{display:none;}.hamburger{display:flex;}.hero{padding:5.5rem 1.5rem 3rem;}.stats-inner{grid-template-columns:repeat(2,1fr);gap:1.5rem;}.ba-grid{grid-template-columns:1fr;}.flow-steps{grid-template-columns:1fr;}.price-grid{grid-template-columns:1fr;}.proof-grid{grid-template-columns:1fr;}.form-row{grid-template-columns:1fr;}.roi-result{grid-template-columns:1fr;}.float-cta{bottom:1rem;right:1rem;padding:0.75rem 1.2rem;font-size:0.85rem;}.diff-box{padding:1.2rem 1.4rem;font-size:0.92rem;}}
+@media (max-width:480px){.hero h1{font-size:2.2rem;}.cta-section h2{font-size:1.7rem;}}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;}
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">본문 바로가기</a>
+<div id="progress-bar" role="progressbar" aria-label="페이지 스크롤 진행"></div>
+<div class="exit-banner" id="exitBanner" role="alert">
+  잠깐! 무료 진단은 리뷰 3개만으로 가능합니다 →
+  <a href="#contact">지금 무료 신청하기</a>
+  <button class="exit-close" onclick="closeExit()" aria-label="닫기">✕</button>
+</div>
+<nav aria-label="주 내비게이션">
+  <a href="/" class="logo" aria-label="LoopForge AI 홈">Loop<span>Forge</span> AI</a>
+  <div class="nav-links" role="navigation">
+    <a href="#how">작동 방식</a><a href="#roi">ROI 계산기</a><a href="#price">가격</a><a href="#proof">후기</a><a href="#faq">FAQ</a>
+  </div>
+  <a href="#contact" class="nav-cta">무료 진단 신청</a>
+  <button class="hamburger" id="hamburgerBtn" onclick="toggleMenu()" aria-label="모바일 메뉴 열기" aria-expanded="false"><span></span><span></span><span></span></button>
+</nav>
+<div class="mobile-menu" id="mobileMenu" aria-modal="true" role="dialog" aria-label="모바일 메뉴">
+  <button class="mobile-close" onclick="closeMenu()" aria-label="메뉴 닫기">✕</button>
+  <a href="#how" onclick="closeMenu()">작동 방식</a><a href="#roi" onclick="closeMenu()">ROI 계산기</a><a href="#price" onclick="closeMenu()">가격</a><a href="#proof" onclick="closeMenu()">후기</a><a href="#faq" onclick="closeMenu()">FAQ</a>
+  <a href="#contact" onclick="closeMenu()" class="accent">무료 진단 신청</a>
+  <a href="https://pf.kakao.com/_wLasX/chat" target="_blank" rel="noopener" onclick="closeMenu()">카카오 채널</a>
+</div>
+<div class="ticker" aria-label="공지"><div class="ticker-inner" aria-hidden="true">⚡ 카페·음식점 사장님 전용 AI 리뷰 자동화 &nbsp;·&nbsp; AI 초안 제공 (자동 게시 없음) &nbsp;·&nbsp; 49만 원 n8n 세팅 &nbsp;·&nbsp; 초기 고객 3곳 한정 모집 중 &nbsp;·&nbsp; ⚡ 카페·음식점 사장님 전용 AI 리뷰 자동화 &nbsp;·&nbsp; AI 초안 제공 (자동 게시 없음) &nbsp;·&nbsp; 49만 원 n8n 세팅 &nbsp;·&nbsp; 초기 고객 3곳 한정 모집 중 &nbsp;·&nbsp;</div></div>
+<main id="main">
+<div class="hero-wrap">
+  <section class="hero">
+    <div class="badge" aria-label="서비스 특징">🎯 카페·음식점 사장님 전문 &nbsp;·&nbsp; 🤖 AI 초안 제공 · 소상공인 특화</div>
+    <h1>리뷰 답글 쓰느라<br><em>오늘도 늦게 퇴근했나요?</em></h1>
+    <p class="hero-sub">카페·음식점 사장님의 리뷰 관리, AI가 초안을 만들어드립니다.<br>답글·부정 리뷰 대응·블로그 홍보글까지 — 사장님은 검토만 하세요.</p>
+    <div class="diff-box" role="note">네이버 AI는 <strong>답글 초안만</strong> 제공합니다.<br><strong>LoopForge</strong>는 답글 + CS 대응 + 블로그 초안 + 키워드 리포트 + <strong>n8n 자동화 자산</strong>까지 만들어드립니다.</div>
+    <div class="hero-btns"><a href="#contact" class="btn-primary" aria-label="10분 무료 진단 신청하기">무료 진단 신청하기 →</a><a href="#how" class="btn-ghost">작동 방식 보기</a></div>
+    <div class="safe-box" role="note" aria-label="안전 안내"><h3>✅ 사장님이 직접 검토 후 사용하는 안전한 서비스입니다</h3><p><strong>AI 답글은 자동으로 게시되지 않습니다.</strong><br>모든 초안은 사장님이 검토·수정 후 복사·붙여넣기하는 방식입니다.<br>부정 리뷰 대응 문구도 반드시 사람이 확인 후 올려주세요.</p></div>
+  </section>
+</div>
+<div class="stats-bar" aria-label="서비스 주요 지표">
+  <div class="stats-inner">
+    <div class="stat-item reveal"><div class="stat-num" id="cnt-diag">0</div><div class="stat-label">누적 무료 진단 건수</div></div>
+    <div class="stat-item reveal"><div class="stat-num" id="cnt-draft">0</div><div class="stat-label">생성된 AI 답글 초안</div></div>
+    <div class="stat-item reveal"><div class="stat-num" id="cnt-save">0<span style="font-size:1.2rem">분</span></div><div class="stat-label">평균 절감 시간 (리뷰 1개당)</div></div>
+    <div class="stat-item reveal"><div class="stat-num">24H</div><div class="stat-label">진단 리포트 제공 시간</div></div>
+  </div>
+</div>
+<section class="section reveal" id="pain" aria-labelledby="pain-title">
+  <div class="section-label">카페·음식점 사장님의 현실</div>
+  <h2 class="section-title" id="pain-title">매일 반복되는 리뷰 관리,<br>진짜 지치지 않으신가요?</h2>
+  <p class="section-sub">리뷰 하나에 쏟는 시간이 쌓이면 — 그것이 기회비용입니다.</p>
+  <div class="pain-grid">
+    <div class="pain-card reveal"><div class="pain-num">1~2<span style="font-size:1rem">시간</span></div><h3>하루 리뷰 관리 시간</h3><p>답글 + 부정 리뷰 대응 + 블로그 홍보글. 쌓이면 연간 수백 시간입니다.</p></div>
+    <div class="pain-card reveal"><div class="pain-num">60%+</div><h3>부정 리뷰 방치율</h3><p>시간이 없어 대응 못한 리뷰가 잠재 고객에게 그대로 노출됩니다.</p></div>
+    <div class="pain-card reveal"><div class="pain-num">0원</div><h3>추가 광고 없이 홍보</h3><p>고객 리뷰를 원료로 블로그 홍보 초안을 AI가 만들어드립니다.</p></div>
+    <div class="pain-card reveal"><div class="pain-num">49만</div><h3>한 번 세팅 → 영구 사용</h3><p>n8n 자동화 워크플로우는 세팅 후 계속 돌아가는 영구 자산입니다.</p></div>
+  </div>
+</section>
+<div class="flow-section" id="how">
+  <div class="flow-inner">
+    <div class="section-label">작동 방식</div>
+    <h2 class="section-title">리뷰 하나가<br>5가지 자산으로 바뀝니다</h2>
+    <p class="section-sub">복사 → AI 분석 → 초안 생성 → 검토 → 자동화 자산</p>
+    <div class="ba-grid">
+      <div class="ba-card reveal"><div class="ba-header">📝 부정 리뷰 대응 예시</div><div class="ba-body"><div class="ba-lbl">고객 원문</div><div class="original">"직원 응대가 조금 아쉬웠어요. 음식은 맛있었는데 서비스가 좀…"</div><div class="ba-lbl">AI 생성 초안 (사장님 검토 후 사용)</div><div class="ai-out">소중한 의견 정말 감사합니다. 응대 과정에서 아쉬움을 드린 점 진심으로 사과드립니다. 더 나은 서비스를 위해 전 직원과 함께 개선하겠습니다. 다음 방문 때도 맛있는 음식으로 기다리겠습니다!</div></div></div>
+      <div class="ba-card reveal"><div class="ba-header">📝 긍정 리뷰 답글 예시</div><div class="ba-body"><div class="ba-lbl">고객 원문</div><div class="original">"커피 맛이 정말 좋았어요! 분위기도 아늑하고 재방문 의사 100%입니다."</div><div class="ba-lbl">AI 생성 초안 (사장님 검토 후 사용)</div><div class="ai-out">와우! 소중한 리뷰 정말 감사합니다 ❤️<br>커피 맛과 분위기를 함께 즐겨주셔서 기쁩니다. 다음 방문 때도 최고의 커피와 따뜻한 공간으로 기다리겠습니다!</div></div></div>
+    </div>
+    <div class="flow-steps">
+      <div class="flow-step reveal"><div class="step-num">01</div><h3>리뷰 입력</h3><p>네이버 플레이스 리뷰를 복사하거나 CSV로 업로드</p></div>
+      <div class="flow-step reveal"><div class="step-num">02</div><h3>AI 분석</h3><p>감정 분석 + 핵심 키워드 + 사장님 말투 반영</p></div>
+      <div class="flow-step reveal"><div class="step-num">03</div><h3>초안 생성</h3><p>답글 · CS 대응 · 블로그 홍보글 초안 자동 생성</p></div>
+      <div class="flow-step reveal"><div class="step-num">04</div><h3>검토 후 사용</h3><p>사장님이 직접 검토 → 복사 → 게시 (안전)</p></div>
+      <div class="flow-step reveal"><div class="step-num">05</div><h3>자동화 세팅</h3><p>n8n + Google Sheets + 카카오 알림 완성</p></div>
+    </div>
+  </div>
+</div>
+<section class="roi-section" id="roi" aria-labelledby="roi-title">
+  <div class="roi-inner">
+    <div class="section-label">ROI 계산기</div>
+    <h2 class="section-title" id="roi-title">우리 가게 절감 효과를<br>직접 계산해 보세요</h2>
+    <div class="roi-box reveal">
+      <div class="roi-slider-label">월 리뷰 수: <strong id="review-count-label">30</strong>개</div>
+      <input type="range" id="reviewSlider" min="10" max="200" value="30" step="10" aria-label="월 리뷰 수 슬라이더" oninput="calcROI(this.value)">
+      <div class="roi-result">
+        <div class="roi-metric"><div class="roi-val" id="roi-time">0</div><div class="roi-key">월 절감 시간 (시간)</div></div>
+        <div class="roi-metric"><div class="roi-val" id="roi-cost">0</div><div class="roi-key">연간 시간 가치 (만원)</div></div>
+        <div class="roi-metric"><div class="roi-val" id="roi-month">0</div><div class="roi-key">세팅 비용 회수 기간</div></div>
+      </div>
+      <p style="font-size:0.78rem;color:var(--muted);margin-top:1.2rem;text-align:center;">※ 리뷰 1개당 평균 작업 시간 10분, 최저시급 기준 개략 계산. 실제 효과는 상황에 따라 다를 수 있습니다.</p>
+    </div>
+  </div>
+</section>
+<section class="section" id="price" aria-labelledby="price-title">
+  <div class="section-label">상품 사다리</div>
+  <h2 class="section-title" id="price-title">지금 시작할 수 있는<br>현실적인 4단계</h2>
+  <p class="section-sub">무료 진단 → 리포트팩 → 세팅 패키지 순으로 단계적으로 진행하세요.</p>
+  <div style="background:rgba(0,229,160,0.06);border:1px solid rgba(0,229,160,0.18);border-radius:12px;padding:1.3rem 1.8rem;margin-bottom:1rem;"><strong>💡 초보 사장님 안내:</strong> 사전 결제 없이 무료 진단부터 시작하세요. 리포트 확인 후 다음 단계를 결정하시면 됩니다.</div>
+  <div class="price-grid">
+    <div class="price-card reveal"><h3>무료 진단</h3><div class="price-tag">0<span>원</span></div><ul><li>리뷰 샘플 3~10개 분석</li><li>자동화 가능 업무 파악</li><li>시간 절감 리포트 제공</li><li>10분 온라인 미팅</li></ul><a href="#contact" class="price-btn" aria-label="무료 진단 신청하기">지금 무료 신청하기</a><p class="micro">결제 없음 · 24시간 내 연락</p></div>
+    <div class="price-card hot reveal"><div class="hot-badge">🔥 첫 결제 최저가</div><h3>리뷰 리포트팩</h3><div class="price-tag">19<span>만 원</span></div><ul><li>리뷰 30개 AI 분석</li><li>답글·CS·블로그 초안 30개</li><li>감정·키워드 분석 리포트</li><li>자동화 도입 제안서</li></ul><a href="#contact" class="price-btn gold" aria-label="19만원 리포트팩 신청">19만 원으로 시작하기</a><p class="micro">가장 부담 없는 첫 결제</p></div>
+    <div class="price-card featured reveal"><div class="feat-badge">⭐ 초기 고객 3곳 한정</div><h3>테스트 패키지</h3><div class="price-tag">49<span>만 원</span></div><ul><li>리뷰 50개 AI 분석</li><li>답글 + 부정 리뷰 대응 초안</li><li>블로그 초안 5개</li><li>n8n 자동화 세팅</li><li>Google Sheets 리포트</li><li>카카오 알림 연동</li></ul><a href="#contact" class="price-btn accent" aria-label="49만원 테스트 패키지 신청">49만 원 테스트 신청</a><p class="micro">한 번 세팅 → 영구 자산</p></div>
+    <div class="price-card reveal"><h3>스탠다드 + 월 유지관리</h3><div class="price-tag" style="font-size:1.5rem;">99만<span> + 30만/월~</span></div><ul><li>테스트 패키지 전체 포함</li><li>리뷰 무제한 처리</li><li>Notion 대시보드</li><li>월간 인사이트 리포트</li><li>워크플로우 지속 개선</li></ul><a href="#contact" class="price-btn" aria-label="스탠다드 패키지 문의">문의하기</a><p class="micro">MRR 기반 안정적 운영</p></div>
+  </div>
+</section>
+<section class="section" id="proof" aria-labelledby="proof-title">
+  <div class="section-label">도입 후기</div>
+  <h2 class="section-title" id="proof-title">사장님들이 직접 말하는<br>변화</h2>
+  <div class="proof-grid">
+    <div class="proof-card reveal"><div class="stars">★★★★★</div><blockquote>매일 밤 리뷰 답글 쓰느라 퇴근을 못 했는데, 이제 AI 초안이 준비돼 있으니 직접 수정해서 바로 올립니다. 정말 편해졌어요.</blockquote><div class="proof-author">— 홍대 카페 운영자 · 무료 진단 후기</div></div>
+    <div class="proof-card reveal"><div class="stars">★★★★★</div><blockquote>부정 리뷰가 무서워서 그냥 뒀는데, AI가 만들어준 대응 초안이 자연스러워서 바로 활용했습니다. 대응 속도가 훨씬 빨라졌어요.</blockquote><div class="proof-author">— 강남 카페 운영자 · 리포트팩 후기</div></div>
+    <div class="proof-card reveal"><div class="stars">★★★★★</div><blockquote>블로그 홍보글을 직접 쓰려면 한 시간이 걸렸는데, 고객 리뷰 기반 AI 초안을 조금만 다듬으면 끝나요. 시간이 많이 절약됩니다.</blockquote><div class="proof-author">— 신촌 음식점 사장님 · 테스트 패키지 후기</div></div>
+  </div>
+  <p class="proof-notice">AI 생성 결과물은 검토용 초안이며 자동 게시되지 않습니다. 실제 효과는 업종·리뷰 수에 따라 다를 수 있습니다.</p>
+</section>
+<div class="faq-section" id="faq">
+  <div class="faq-inner">
+    <div class="section-label">자주 묻는 질문</div>
+    <h2 class="section-title">궁금한 점이 있으신가요?</h2>
+    <div class="faq-list" role="list">
+      <div class="faq-item" role="listitem"><button class="faq-q" onclick="toggleFaq(this)" aria-expanded="false">AI 답글이 자동으로 게시되나요?<span class="faq-icon" aria-hidden="true">+</span></button><div class="faq-a" role="region"><p>절대 그렇지 않습니다. 모든 AI 답글은 사장님이 직접 검토·수정 후 게시하는 <strong>초안</strong>입니다. 자동 게시는 설계 단계부터 배제했습니다.</p></div></div>
+      <div class="faq-item" role="listitem"><button class="faq-q" onclick="toggleFaq(this)" aria-expanded="false">카페·음식점 외 다른 업종도 가능한가요?<span class="faq-icon" aria-hidden="true">+</span></button><div class="faq-a" role="region"><p>현재는 카페·음식점 사장님을 최우선으로 최적화했습니다. 다른 업종은 무료 진단 신청 시 말씀해 주시면 검토해 드립니다.</p></div></div>
+      <div class="faq-item" role="listitem"><button class="faq-q" onclick="toggleFaq(this)" aria-expanded="false">개인정보(리뷰 내용)는 안전한가요?<span class="faq-icon" aria-hidden="true">+</span></button><div class="faq-a" role="region"><p>리뷰 분석은 HTTPS 암호화 통신으로 처리됩니다. 수집된 데이터는 진단 목적으로만 사용하며 제3자에게 제공되지 않습니다.</p></div></div>
+      <div class="faq-item" role="listitem"><button class="faq-q" onclick="toggleFaq(this)" aria-expanded="false">무료 진단은 정말 무료인가요? 이후 강매는 없나요?<span class="faq-icon" aria-hidden="true">+</span></button><div class="faq-a" role="region"><p>완전 무료입니다. 리뷰 샘플 3~10개만 보내주시면 24시간 내 리포트를 드립니다. 결제는 리포트 확인 후 사장님이 결정하시면 됩니다. 강매나 압박은 없습니다.</p></div></div>
+      <div class="faq-item" role="listitem"><button class="faq-q" onclick="toggleFaq(this)" aria-expanded="false">n8n 자동화가 뭔가요? 어렵지 않나요?<span class="faq-icon" aria-hidden="true">+</span></button><div class="faq-a" role="region"><p>n8n은 노코드 자동화 도구입니다. 세팅은 저희가 전부 해드리며 사장님은 결과만 받아보시면 됩니다. 리뷰 → AI 분석 → Google Sheets 저장 → 카카오 알림까지 자동으로 연결됩니다.</p></div></div>
+    </div>
+  </div>
+</div>
+<section class="cta-section" id="contact" aria-labelledby="contact-title">
+  <h2 id="contact-title">리뷰 3개만 보내주시면<br>맞춤 샘플 리포트를 드립니다</h2>
+  <p>10분 무료 진단 후 자동화 가능한 업무와 예상 절감 시간을 리포트로 제공합니다.<br>결제는 진단 이후에 결정하세요. 어떠한 강매도 없습니다.</p>
+  <div class="cta-btns">
+    <a href="https://pf.kakao.com/_wLasX/chat" target="_blank" rel="noopener noreferrer" class="btn-kakao" aria-label="카카오 채널로 바로 문의하기">💬 카카오 채널로 바로 문의</a>
+    <a href="#contact-form" class="btn-ghost">폼으로 신청하기</a>
+  </div>
+  <div class="contact-form" id="contact-form" role="form" aria-labelledby="form-title">
+    <p class="form-title" id="form-title">📋 무료 진단 신청서 <span style="font-weight:400;color:var(--muted);font-size:0.85rem;">(24시간 내 연락)</span></p>
+    <div id="formWrap">
+      <div class="form-row">
+        <div class="form-group"><label for="f-name">업체명 *</label><input type="text" id="f-name" placeholder="예: 블루문 카페" required autocomplete="organization" aria-required="true"></div>
+        <div class="form-group"><label for="f-type">업종 *</label><select id="f-type" required aria-required="true"><option value="">선택하세요</option><option value="카페" selected>카페</option><option value="음식점">음식점</option><option value="베이커리">베이커리 / 디저트샵</option><option value="기타">기타</option></select></div>
+      </div>
+      <div class="form-group"><label for="f-contact">연락처 (카카오ID 또는 전화번호) *</label><input type="text" id="f-contact" placeholder="예: kakao_id 또는 010-1234-5678" required aria-required="true" autocomplete="tel"></div>
+      <div class="form-group"><label for="f-review">리뷰 샘플 (3개 이상 붙여넣기 권장)</label><textarea id="f-review" placeholder="네이버 플레이스 리뷰를 복사해서 붙여넣어 주세요." aria-label="리뷰 샘플 입력"></textarea></div>
+      <input type="text" id="hp-website" name="website" style="display:none;" autocomplete="off" tabindex="-1" aria-hidden="true">
+      <div class="form-agree">
+        <label><input type="checkbox" id="privacyAgree" required aria-required="true"><span>[필수] 개인정보 수집·이용에 동의합니다. <button type="button" onclick="openPrivacy()" style="background:none;border:none;color:var(--accent);text-decoration:underline;cursor:pointer;font-size:inherit;font-family:inherit;">개인정보처리방침 보기</button></span></label>
+        <label><input type="checkbox" id="reviewAgree"><span>[선택] 리뷰 샘플 데이터를 AI 분석 목적으로 처리하는 것에 동의합니다.</span></label>
+      </div>
+      <!-- Cloudflare Turnstile 보안 위젯
+           Cloudflare 대시보드 → Turnstile 메뉴에서 발급한 사이트키로
+           sitekey: 0x4AAAAAADReGXn-318jsskf -->
+      <div class="form-group" style="margin-top:1rem;">
+        <div class="cf-turnstile" data-sitekey="0x4AAAAAADReGXn-318jsskf" data-theme="dark"></div>
+        <p style="font-size:0.76rem;color:var(--muted);margin-top:0.4rem;">스팸 방지를 위해 Cloudflare 검증을 사용합니다.</p>
+      </div>
+      <button class="form-submit" onclick="submitForm()" id="submitBtn" type="button">무료 진단 신청하기 →</button>
+      <div class="form-error" id="formError" role="alert"></div>
+      <p class="form-privacy">수집된 정보는 진단 목적으로만 사용되며 제3자에게 제공되지 않습니다.</p>
+    </div>
+    <div class="form-success" id="formSuccess" style="display:none;" role="status">
+      <div class="icon">✅</div>
+      <h4>신청이 완료되었습니다!</h4>
+      <p>24시간 내로 카카오 채널 또는 입력하신 연락처로 연락드리겠습니다.<br>감사합니다!</p>
+      <a href="https://pf.kakao.com/_wLasX/chat" target="_blank" rel="noopener noreferrer" class="btn-primary" style="display:inline-flex;margin-top:1.5rem;">카카오 채널 바로가기 →</a>
+    </div>
+  </div>
+</section>
+</main>
+<footer>
+  <div class="footer-top">
+    <div class="footer-brand"><div class="footer-logo">Loop<span>Forge</span> AI</div><p>카페·음식점 사장님의 반복 업무를<br>영구 자동화 자산으로 만듭니다.</p></div>
+    <div class="footer-links">
+      <a href="#how">작동 방식</a><a href="#roi">ROI 계산기</a><a href="#price">가격</a><a href="#proof">후기</a><a href="#faq">FAQ</a><a href="#contact">무료 진단</a>
+      <a href="https://pf.kakao.com/_wLasX/chat" target="_blank" rel="noopener">카카오 문의</a>
+      <button onclick="openPrivacy()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.85rem;font-family:inherit;transition:color .2s;" onmouseover="this.style.color='#f2f4f7'" onmouseout="this.style.color='#8896a8'">개인정보처리방침</button>
+    </div>
+  </div>
+  <div class="footer-biz">
+    <strong>상호명:</strong> 주식회사 한국석면조사 &nbsp;|&nbsp;<strong>대표자:</strong> 김영진 &nbsp;|&nbsp;<strong>사업자등록번호:</strong> 617-86-24935<br>
+    <strong>카카오 채널:</strong> <a href="https://pf.kakao.com/_wLasX" target="_blank" rel="noopener">pf.kakao.com/_wLasX</a>
+  </div>
+  <div class="footer-bottom">© 2026 LoopForge AI. All rights reserved. &nbsp;|&nbsp; AI 생성 결과물은 검토용 초안이며 자동 게시되지 않습니다.</div>
+</footer>
+<button class="float-cta" id="floatCta" onclick="window.location.href='#contact'" aria-label="무료 진단 신청하기">무료 진단 받기 →</button>
+<div id="privacyModal" class="modal-bg" role="dialog" aria-modal="true" aria-labelledby="privacy-title" onclick="if(event.target===this)closePrivacy()">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <button class="modal-close-btn" onclick="closePrivacy()" aria-label="모달 닫기">✕</button>
+    <h3 id="privacy-title">개인정보처리방침</h3>
+    <p><strong>수집 항목:</strong> 업체명, 업종, 연락처, 리뷰 샘플(선택)</p>
+    <p><strong>수집 목적:</strong> 무료 진단 서비스 제공 및 결과 전달</p>
+    <p><strong>보유 기간:</strong> 진단 완료 후 6개월 이내 파기</p>
+    <p><strong>제3자 제공:</strong> 없음</p>
+    <p><strong>접속 정보:</strong> 스팸·보안 방지 목적으로 접속 IP가 서버 로그에 일시 기록될 수 있습니다.</p>
+    <button onclick="closePrivacy()" style="background:var(--accent);color:#000;border:none;border-radius:8px;padding:0.8rem 2rem;font-weight:800;margin-top:1.5rem;cursor:pointer;font-family:var(--font);">확인</button>
+  </div>
+</div>
+<script>
+window.addEventListener('scroll',function(){
+  var st=document.documentElement.scrollTop||document.body.scrollTop;
+  var sh=document.documentElement.scrollHeight-document.documentElement.clientHeight;
+  document.getElementById('progress-bar').style.width=(sh>0?(st/sh)*100:0)+'%';
+  var fc=document.getElementById('floatCta');
+  fc.classList.toggle('visible',st>500);
+},{passive:true});
+
+var ro=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('visible');ro.unobserve(e.target);}});},{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(function(el){ro.observe(el);});
+
+function animateCounter(el,target,suffix,duration){var start=0;var step=target/(duration/16);var timer=setInterval(function(){start+=step;if(start>=target){start=target;clearInterval(timer);}el.textContent=Math.floor(start)+(suffix||'');},16);}
+var statsObserver=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){animateCounter(document.getElementById('cnt-diag'),47,'건+',1200);animateCounter(document.getElementById('cnt-draft'),380,'개+',1500);animateCounter(document.getElementById('cnt-save'),8,'분',800);statsObserver.disconnect();}});},{threshold:0.3});
+var statsBar=document.querySelector('.stats-bar');if(statsBar){statsObserver.observe(statsBar);}
+
+function calcROI(val){var n=parseInt(val);document.getElementById('review-count-label').textContent=n;var monthlyMinutes=n*10;var monthlyHours=(monthlyMinutes/60).toFixed(1);var annualSaving=Math.round((monthlyMinutes*12*10030/60)/10000);var paybackMonths=annualSaving>0?(49/(annualSaving/12)).toFixed(1):'-';document.getElementById('roi-time').textContent=monthlyHours+'h';document.getElementById('roi-cost').textContent=annualSaving+'만';document.getElementById('roi-month').textContent=paybackMonths+'개월';}
+calcROI(30);
+
+function toggleMenu(){var m=document.getElementById('mobileMenu');var btn=document.getElementById('hamburgerBtn');var isOpen=m.classList.toggle('open');btn.classList.toggle('open',isOpen);btn.setAttribute('aria-expanded',isOpen);document.body.style.overflow=isOpen?'hidden':'';}
+function closeMenu(){var m=document.getElementById('mobileMenu');var btn=document.getElementById('hamburgerBtn');m.classList.remove('open');btn.classList.remove('open');btn.setAttribute('aria-expanded','false');document.body.style.overflow='';}
+function toggleFaq(btn){var item=btn.closest('.faq-item');var isOpen=item.classList.toggle('open');btn.setAttribute('aria-expanded',isOpen);}
+function openPrivacy(){document.getElementById('privacyModal').classList.add('open');document.body.style.overflow='hidden';}
+function closePrivacy(){document.getElementById('privacyModal').classList.remove('open');document.body.style.overflow='';}
+var exitShown=false;
+document.addEventListener('mouseleave',function(e){if(!exitShown&&e.clientY<10){document.getElementById('exitBanner').classList.add('show');exitShown=true;}});
+function closeExit(){document.getElementById('exitBanner').classList.remove('show');}
+
+function submitForm(){
+  var name=document.getElementById('f-name').value.trim();
+  var type=document.getElementById('f-type').value;
+  var contact=document.getElementById('f-contact').value.trim();
+  var review=document.getElementById('f-review').value.trim();
+  var privacyChecked=document.getElementById('privacyAgree').checked;
+  var honeypot=document.getElementById('hp-website').value.trim();
+  var errEl=document.getElementById('formError');
+  var btn=document.getElementById('submitBtn');
+  errEl.style.display='none';
+  if(!name||!type||!contact){errEl.textContent='업체명, 업종, 연락처는 필수입니다.';errEl.style.display='block';return;}
+  if(!privacyChecked){errEl.textContent='개인정보 수집·이용 동의는 필수입니다.';errEl.style.display='block';return;}
+  // Cloudflare Turnstile 응답 토큰 수집
+  // Turnstile 위젯이 렌더링되면 name="cf-turnstile-response" 인 hidden input이 자동으로 생성됩니다.
+  var turnstileEl=document.querySelector('[name="cf-turnstile-response"]');
+  var turnstileToken=turnstileEl?turnstileEl.value:'';
+  if(!turnstileToken){errEl.textContent='보안 검증을 완료해주세요.';errEl.style.display='block';return;}
+  if(honeypot!==''){document.getElementById('formWrap').style.display='none';document.getElementById('formSuccess').style.display='block';return;}
+  btn.textContent='전송 중...';btn.disabled=true;
+  var payload={type:'contact_form',business_name:name,business_type:type,contact:contact,review_sample:review,privacy_agree:privacyChecked,turnstile_token:turnstileToken,source:'loopforge-v6-final',submitted_at:new Date().toISOString()};
+  fetch('https://loopforge-contact-proxy.wnsrua01.workers.dev',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+  .then(function(r){return r.json();})
+  .then(function(data){
+    if(data.success){
+      // GA4 이벤트 트래킹: 폼 제출 성공 시 form_submit 이벤트 발송
+      if(typeof gtag!=='undefined'){gtag('event','form_submit',{event_category:'contact'});}
+      document.getElementById('formWrap').style.display='none';
+      document.getElementById('formSuccess').style.display='block';
+    }else{throw new Error(data.error||'전송 실패');}
+  })
+  .catch(function(){errEl.textContent='전송에 실패했습니다. 카카오 채널로 직접 문의해 주세요.';errEl.style.display='block';btn.textContent='무료 진단 신청하기 →';btn.disabled=false;});
+}
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeMenu();closePrivacy();closeExit();}});
+console.log('%c🚀 LoopForge AI v6-final | 벤치마킹 최적화 완료','color:#00E5A0;font-weight:900;font-size:14px;');
+</script>
+</body>
+</html>
