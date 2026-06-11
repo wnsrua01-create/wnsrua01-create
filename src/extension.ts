@@ -1,4 +1,4 @@
-import * as vscode from 'vscode';
+﻿import * as vscode from 'vscode';
 import * as http from 'http';
 import axios from 'axios';
 import * as fs from 'fs';
@@ -1649,8 +1649,8 @@ async function sendTelegramReport(text: string): Promise<boolean> {
     const url = `https://api.telegram.org/bot${token}/sendMessage`;
     await axios.post(url, {
       chat_id: chatId,
-      text: _markdownToTelegram(text).slice(0, 4000),
-      parse_mode: 'Markdown',
+      text: text.replace(/[*_`\[\]()~>#+=|{}.!-]/g, ' ').slice(0, 4000),
+      
       disable_web_page_preview: true
     }, { timeout: 8000 });
     return true;
@@ -1690,7 +1690,7 @@ async function sendTelegramLong(text: string): Promise<boolean> {
     let ok = false;
     try {
       const r = await axios.post(url, {
-        chat_id: chatId, text: part, parse_mode: 'Markdown', disable_web_page_preview: true,
+        chat_id: chatId, text: part,  disable_web_page_preview: true,
       }, { timeout: 10000, validateStatus: () => true });
       ok = r.status >= 200 && r.status < 300;
       if (!ok) {
@@ -6704,11 +6704,11 @@ function _seedAgentToolsIfMissing(agentId: string) {
       _seedDeveloperPwaSetup(toolsDir);
       _seedDeveloperPackApply(toolsDir);
       _seedDeveloperLintTest(toolsDir);
-    } else if (agentId === 'business') {
+    } else if (false && agentId === 'business') { // GAON DISABLED
       /* v2.89.121 — 비즈니스 에이전트 도구. PayPal 매출 자동 분석. */
       const toolsDir = path.join(getCompanyDir(), '_agents', agentId, 'tools');
       fs.mkdirSync(toolsDir, { recursive: true });
-      _seedBusinessPaypalRevenue(toolsDir);
+      // _seedBusinessPaypalRevenue(toolsDir); // GAON DISABLED
     }
   } catch { /* ignore */ }
 }
@@ -11031,6 +11031,53 @@ class CompanyDashboardPanel {
                     } catch (e: any) {
                         this._postToast(`⚠️ 자가검증 모드 변경 실패: ${e?.message || e}`, true);
                     }
+                } else if (msg?.type === 'templateInject') {
+                    (async () => {
+                      try {
+                        const agentId = String(msg.agentId ?? '');
+                        const pack    = String(msg.pack ?? '');
+                        if (!agentId || !pack) {
+                          this._postToast('templateInject: missing params', true);
+                          this._panel?.webview.postMessage({ type: 'tplInjectResult', ok: false, msg: 'missing params' });
+                          return;
+                        }
+                        const path = require('path');
+                        const fs   = require('fs');
+                        const os   = require('os');
+                        const brainDir = this._getBrainDir();
+                        const agentDir = path.join(brainDir, '_agents', agentId);
+                        if (!fs.existsSync(agentDir)) fs.mkdirSync(agentDir, { recursive: true });
+                        const candidates = [
+                          path.join(brainDir, '_tool-seeds', pack),
+                          path.join(os.homedir(), '.connect-ai-brain', '_tool-seeds', pack)
+                        ];
+                        let src = '';
+                        for (const c of candidates) { if (fs.existsSync(c)) { src = c; break; } }
+                        if (!src) {
+                          fs.writeFileSync(
+                            path.join(agentDir, 'tpl_' + pack + '_manifest.json'),
+                            JSON.stringify({ name: pack, agent: agentId, injected_at: new Date().toISOString() }, null, 2),
+                            'utf8'
+                          );
+                          this._postToast('[' + pack + '] no seed - manifest created', false);
+                          this._panel?.webview.postMessage({ type: 'tplInjectResult', ok: true, msg: 'manifest created' });
+                          return;
+                        }
+                        const copyDir = (s: string, d: string) => {
+                          fs.mkdirSync(d, { recursive: true });
+                          for (const f of fs.readdirSync(s)) {
+                            const sp = path.join(s, f), dp = path.join(d, f);
+                            fs.statSync(sp).isDirectory() ? copyDir(sp, dp) : fs.copyFileSync(sp, dp);
+                          }
+                        };
+                        copyDir(src, path.join(agentDir, pack));
+                        this._postToast('Template [' + pack + '] injected to ' + agentId, false);
+                        this._panel?.webview.postMessage({ type: 'tplInjectResult', ok: true, msg: pack + ' injected' });
+                      } catch(e: any) {
+                        this._postToast('templateInject error: ' + (e?.message || e), true);
+                        this._panel?.webview.postMessage({ type: 'tplInjectResult', ok: false, msg: String(e?.message || e) });
+                      }
+                    })();
                 } else if (msg?.type === 'openAgentFolder' && typeof msg.agentId === 'string') {
                     /* v2.87.6 — 대시보드 팀 카드 클릭 → 에이전트 폴더 OS 탐색기에서
                        열기. _agents/<id>/ 안에 지식·스킬·메모리·세션 다 있어서
@@ -11400,6 +11447,7 @@ class CompanyDashboardPanel {
       <button class="btn ghost" id="briefBtn" title="회사 전체 상태·진행 작업·이슈 즉시 점검">시스템 진단</button>
       <button class="btn ghost" id="scheduleBtn" title="정해진 시각·요일에 시스템이 자동 보고">리포트 자동화</button>
       <button class="btn ghost" id="modelsBtn" title="각 에이전트마다 최적 LLM 자동 분배·실행">모델 오케스트레이션</button>
+        <button class="btn ghost" id="tplInjectBtn" title="Inject template pack" onclick="injectTemplate()">&#128203; Template Inject</button>
       <button class="btn ghost" id="refreshBtn" title="동기화">↻</button>
     </div>
   </div>
@@ -17157,7 +17205,7 @@ class SidebarChatProvider implements vscode.WebviewViewProvider {
                         const r = await axios.post(`https://api.telegram.org/bot${encodeURIComponent(token)}/sendMessage`, {
                             chat_id: chatId,
                             text,
-                            parse_mode: 'Markdown',
+                            
                         }, { timeout: 8000, validateStatus: () => true });
                         const data = r.data || {};
                         if (data.ok) {

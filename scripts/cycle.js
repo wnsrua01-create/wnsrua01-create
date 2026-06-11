@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * Standalone 24h autonomous cycle for Connect AI Lab.
  *
@@ -151,9 +150,9 @@ runCycle().catch((e) => {
 # Then: launchctl load ~/Library/LaunchAgents/com.connectai.cycle.plist
 
 # Linux/macOS cron — every 30 minutes
-# */30 * * * * /usr/local/bin/node /path/to/cycle.js >> ~/.connect-ai-brain/cycle.log 2>&1
+# #/30 * * * * /usr/local/bin/node /path/to/cycle.js >> ~/.connect-ai-brain/cycle.log 2>&1
 
 # Windows Task Scheduler — create a task that runs node.exe with this script as arg
 # every 30 min, with working directory set to the brain folder.
 
-──────────────────────────────────────────────────────────────────────────── */
+// ──────────────────────────────────────────────────────────────────────────── */

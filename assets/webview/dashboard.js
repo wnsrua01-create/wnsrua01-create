@@ -276,7 +276,7 @@ function render(s) {
       /* 잠긴 에이전트: 사진 영역에 글리치 오버레이 + 락 배지 + 이름 가림 */
       if (isLocked) {
         const lockTitle = '🔒 ' + esc(a.name) + ' — 입사 준비 중 (클릭: 채용 인증)';
-        return '<div class="agent-card agent-card-locked" data-agent="' + esc(a.id) + '" style="--agent-color:' + esc(a.color || '#00ff8b') + '" title="' + lockTitle + '">'
+        return '<div class="agent-card agent-card-locked" data-agent="' + esc(a.id) + '" data-agent-id="' + esc(a.id) + '" data-agent-name="' + esc(a.name||a.id) + '" style="--agent-color:' + esc(a.color || '#00ff8b') + '" title="' + lockTitle + '">'
           +   photoHtml
           +   '<div class="agent-overlay"></div>'
           +   '<div class="agent-glitch"></div>'
@@ -291,7 +291,7 @@ function render(s) {
       /* v2.89.107 — 비활성 에이전트: 페이드 + 토글 배지 (PIN 안 필요) */
       if (isInactive) {
         const inactiveTitle = '⏸ ' + esc(a.name) + ' — 비활성 (클릭: 활성화)';
-        return '<div class="agent-card agent-card-inactive" data-agent="' + esc(a.id) + '" style="--agent-color:' + esc(a.color || '#00ff8b') + '" title="' + inactiveTitle + '">'
+        return '<div class="agent-card agent-card-inactive" data-agent="' + esc(a.id) + '" data-agent-id="' + esc(a.id) + '" data-agent-name="' + esc(a.name||a.id) + '" style="--agent-color:' + esc(a.color || '#00ff8b') + '" title="' + inactiveTitle + '">'
           +   photoHtml
           +   '<div class="agent-overlay"></div>'
           +   '<div class="agent-inactive-badge">⏸</div>'
@@ -302,7 +302,7 @@ function render(s) {
           +   '</div>'
           + '</div>';
       }
-      return '<div class="agent-card" data-agent="' + esc(a.id) + '" style="--agent-color:' + esc(a.color || '#00ff8b') + '" title="' + esc(a.name + ' — ' + (a.role||'') + ' (클릭: 상세)') + '">'
+      return '<div class="agent-card" data-agent="' + esc(a.id) + '" data-agent-id="' + esc(a.id) + '" data-agent-name="' + esc(a.name||a.id) + '" style="--agent-color:' + esc(a.color || '#00ff8b') + '" title="' + esc(a.name + ' — ' + (a.role||'') + ' (클릭: 상세)') + '">'
         +   photoHtml
         +   '<div class="agent-overlay"></div>'
         +   activeDot
@@ -1120,6 +1120,80 @@ function showAgentDetailModal(a){
   document.addEventListener('keydown', escH);
 }
 
+
+// [PATCH] injectTemplate modal
+(function _mountTplModal() {
+  if (document.getElementById('tplModalOverlay')) return;
+  var ov = document.createElement('div');
+  ov.id = 'tplModalOverlay';
+  ov.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9000;align-items:center;justify-content:center;';
+  ov.innerHTML = '<div style="background:#1e1e1e;border:1px solid #007fd4;border-radius:8px;padding:24px;width:420px;max-width:95vw;">'
+    + '<h3 style="margin:0 0 12px;color:#ccc;font-size:15px;">&#128203; Template Pack Inject</h3>'
+    + '<label style="font-size:12px;color:#888;">Agent</label>'
+    + '<select id="tplAgentSel" style="width:100%;margin:4px 0 12px;padding:6px;background:#252525;color:#ccc;border:1px solid #444;border-radius:4px;">'
+    + '<option value="">-- select agent --</option>'
+    + '</select>'
+    + '<label style="font-size:12px;color:#888;">Template Pack</label>'
+    + '<select id="tplPackSel" style="width:100%;margin:4px 0 12px;padding:6px;background:#252525;color:#ccc;border:1px solid #444;border-radius:4px;">'
+    + '<option value="gaon_youtube">GAON YouTube Pack</option>'
+    + '<option value="news_signal">NewsSignal CH21</option>'
+    + '<option value="senior_content">Senior Content Pack</option>'
+    + '<option value="tts_script">TTS Script Pack</option>'
+    + '<option value="landing_kit">Landing Kit</option>'
+    + '<option value="custom">Custom...</option>'
+    + '</select>'
+    + '<div id="tplCustomRow" style="display:none;margin-bottom:12px;">'
+    + '<input id="tplCustomName" type="text" placeholder="my_pack" style="width:100%;margin-top:4px;padding:6px;background:#252525;color:#ccc;border:1px solid #444;border-radius:4px;box-sizing:border-box;">'
+    + '</div>'
+    + '<div id="tplStatus" style="font-size:12px;color:#888;min-height:18px;margin-bottom:12px;"></div>'
+    + '<div style="display:flex;gap:8px;justify-content:flex-end;">'
+    + '<button id="tplCancelBtn" style="padding:6px 16px;background:transparent;color:#888;border:1px solid #555;border-radius:4px;cursor:pointer;">Cancel</button>'
+    + '<button id="tplConfirmBtn" style="padding:6px 16px;background:#007fd4;color:#fff;border:none;border-radius:4px;cursor:pointer;">Inject</button>'
+    + '</div></div>';
+  document.body.appendChild(ov);
+  document.getElementById('tplPackSel').addEventListener('change', function() {
+    document.getElementById('tplCustomRow').style.display = this.value === 'custom' ? 'block' : 'none';
+  });
+  document.getElementById('tplCancelBtn').addEventListener('click', function() {
+    document.getElementById('tplModalOverlay').style.display = 'none';
+  });
+  document.getElementById('tplConfirmBtn').addEventListener('click', function() {
+    var agentId = document.getElementById('tplAgentSel').value;
+    var packSel = document.getElementById('tplPackSel');
+    var pack = packSel.value === 'custom'
+      ? document.getElementById('tplCustomName').value.trim()
+      : packSel.value;
+    if (!agentId) { document.getElementById('tplStatus').textContent = 'Select an agent'; return; }
+    if (!pack)    { document.getElementById('tplStatus').textContent = 'Enter pack name'; return; }
+    document.getElementById('tplStatus').textContent = 'Injecting...';
+    this.disabled = true;
+    vscode.postMessage({ type: 'templateInject', agentId: agentId, pack: pack });
+  });
+})();
+
+function injectTemplate() {
+  var sel = document.getElementById('tplAgentSel');
+  if (!sel) return;
+  while (sel.options.length > 1) sel.remove(1);
+  document.querySelectorAll('[data-agent-id]').forEach(function(el) {
+    var opt = document.createElement('option');
+    opt.value = el.dataset.agentId;
+    opt.textContent = el.dataset.agentName || el.dataset.agentId;
+    sel.appendChild(opt);
+  });
+  if (sel.options.length === 1 && window.__agents) {
+    window.__agents.forEach(function(a) {
+      var opt = document.createElement('option');
+      opt.value = a.id || a.name;
+      opt.textContent = a.name || a.id;
+      sel.appendChild(opt);
+    });
+  }
+  document.getElementById('tplStatus').textContent = '';
+  document.getElementById('tplConfirmBtn').disabled = false;
+  document.getElementById('tplModalOverlay').style.display = 'flex';
+}
+
 window.addEventListener('message', e => {
   const m = e.data;
   if (m.type === 'state') render(m);
@@ -1288,4 +1362,10 @@ function _renderRevenueMini(data) {
 window.addEventListener('message', e => {
   const m = e.data;
   if (m.type === 'revenueMini') _renderRevenueMini(m.data);
+  if (m.type === 'tplInjectResult') {
+    var st=document.getElementById('tplStatus'), cb=document.getElementById('tplConfirmBtn');
+    if (st) st.textContent = m.ok ? 'Done: '+m.msg : 'Error: '+m.msg;
+    if (cb) cb.disabled = false;
+    if (m.ok) setTimeout(function(){ document.getElementById('tplModalOverlay').style.display='none'; }, 1500);
+  }
 });
