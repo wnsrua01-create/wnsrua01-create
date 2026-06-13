@@ -9,3 +9,7 @@ releases/
 *.bak.*
 *.zip
 *.vsix
+
+# Local audit reports
+reports/
+.gitignore.bak_*
