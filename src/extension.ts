@@ -8577,6 +8577,46 @@ export function activate(context: vscode.ExtensionContext) {
     }
     // ==========================================
 
+    // Brain directory file watcher — auto-sync to GitHub when any file
+    // in the brain folder changes (manual edits, external tools, etc.).
+    // Debounced 5s so rapid multi-file operations emit only one push.
+    let _brainWatcher: vscode.FileSystemWatcher | null = null;
+    let _brainSyncTimer: ReturnType<typeof setTimeout> | null = null;
+
+    function _startBrainWatcher() {
+        if (_brainWatcher) { _brainWatcher.dispose(); _brainWatcher = null; }
+        const bd = _getBrainDir();
+        if (!bd) return;
+        try {
+            _brainWatcher = vscode.workspace.createFileSystemWatcher(
+                new vscode.RelativePattern(vscode.Uri.file(bd), '**/*.{md,json,py,txt,html,tsx,ts,js}')
+            );
+            const triggerSync = () => {
+                if (_brainSyncTimer) clearTimeout(_brainSyncTimer);
+                _brainSyncTimer = setTimeout(() => {
+                    _safeGitAutoSync(_getBrainDir(), 'Auto-sync: brain directory updated', _activeChatProvider);
+                }, 5000);
+            };
+            _brainWatcher.onDidCreate(triggerSync);
+            _brainWatcher.onDidChange(triggerSync);
+            _brainWatcher.onDidDelete(triggerSync);
+            context.subscriptions.push(_brainWatcher);
+            console.log('[Connect AI] Brain watcher active:', bd);
+        } catch (e) {
+            console.error('[Connect AI] Brain watcher failed to start:', e);
+        }
+    }
+
+    _startBrainWatcher();
+    // Re-start watcher when brain path changes in settings
+    context.subscriptions.push(
+        vscode.workspace.onDidChangeConfiguration(e => {
+            if (e.affectsConfiguration('connectAiLab.localBrainPath')) {
+                _startBrainWatcher();
+            }
+        })
+    );
+
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider('connect-ai-lab-v2-view', provider, {
             webviewOptions: { retainContextWhenHidden: true }
